@@ -1,4 +1,6 @@
-# cb-tok-exhibition
+# Colonel By TOK Exhibition
+
+## Authorized by Mr. Richardson; CAS Project for Vansh, Amro, Edwin, Oscar
 
 ## Project setup
 ```
