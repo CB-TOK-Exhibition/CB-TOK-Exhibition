@@ -1,5 +1,11 @@
 <template>
-	<router-view/>
+	<div class="w-full min-h-screen">
+		<router-view v-slot="slotProps">
+			<transition name="fade" mode="out-in">
+				<component :is="slotProps.Component"></component>			
+			</transition>
+		</router-view>
+	</div>
 	<footitty></footitty>
 </template>
 
@@ -12,7 +18,6 @@
 			'footitty': footer
 		}
 	})
-	
 </script>
 
 <style lang="scss">

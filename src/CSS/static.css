@@ -1,19 +1,26 @@
-.noOutline:focus{
+.noOutline:focus {
     outline: none;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {
     width: 13px;
     height: 13px;
 }
+
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(13deg, #adadad 14%,#d4d4d4 64%);
+    background: linear-gradient(13deg, #adadad 14%, #d4d4d4 64%);
     border-radius: 9px;
 }
-::-webkit-scrollbar-thumb:hover{
-    background: linear-gradient(13deg, #7d7c7c 14%,#a8a8a8 65%);
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(13deg, #7d7c7c 14%, #a8a8a8 65%);
 }
-::-webkit-scrollbar-track{
+
+::-webkit-scrollbar-track {
     background: #ffffff;
     border-radius: 10px;
     box-shadow: inset 7px 10px 12px #f0f0f0;

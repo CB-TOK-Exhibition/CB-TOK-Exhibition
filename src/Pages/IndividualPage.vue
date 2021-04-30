@@ -1,0 +1,34 @@
+<template>
+    <div>
+        Project Page
+    </div>
+</template>
+<script lang="ts">
+import { defineComponent } from "@vue/runtime-core";
+import {db} from '@/firebase'
+
+export default defineComponent({
+    name:"Project Page",
+    data() {
+        return {
+            project:{}
+        }
+    },
+    async created(){
+        const projectID = this.$route.fullPath.substring(1)
+        const docRef = db.collection('projects').doc(projectID)
+        
+        const doc = await docRef.get().catch(err => {
+            console.error(err);
+            this.$router.push('/')
+        })
+
+        if (doc && doc.exists) {
+            const data = doc.data();
+            if(data) this.project = data
+            else this.$router.push('/')
+        }
+        else this.$router.push('/')
+    }
+})
+</script>
