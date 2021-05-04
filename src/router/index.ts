@@ -1,26 +1,52 @@
 import { createRouter, RouteRecordRaw, createWebHashHistory } from 'vue-router'
 import Home from '@/Pages/Home.vue'
+import Vuex from '@/store'
 
 const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/',
 		name: 'Home',
-		component: Home
+		component: Home,
+		meta: {
+			title: "Home"
+		}
 	},
 	{
 		path: '/search',
 		name: 'Search',
-		component: () => import('@/Pages/Search.vue')
+		component: () => import(/* webpackChunkName: "search" */'@/Pages/Search.vue'),
+		meta:{
+			title:"Search"
+		}
 	},
 	{
 		path: '/discover',
 		name: 'Discover',
-		component: () => import('@/Pages/Discover.vue')
+		component: () => import(/* webpackChunkName: "discover" */'@/Pages/Discover.vue'),
+		meta: {
+			title: "Discover"
+		}
+	},
+	{
+		path: '/upload',
+		name: 'Upload',
+		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Upload.vue'),
+		meta: {
+			title: "Upload"
+		}
+	},
+	{
+		path:'/uploadInstructions',
+		name:'Upload Instructions',
+		component: () => import(/* webpackChunkName: "uploadInstructions" */'@/Pages/UploadInstructions.vue'),
+		meta: {
+			title: "Upload Instructions"
+		}
 	},
 	{
 		path: '/:id',
 		name: "Project Page",
-		component: () => import ('@/Pages/IndividualPage.vue')
+		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue')
 	},
 	// {
 	//   path: '/about',
@@ -32,7 +58,7 @@ const routes: Array<RouteRecordRaw> = [
 	// }
 ]
 
-
+//ONLY IF WE USE HISTORY MODE
 // if (!(process.env.NODE_ENV === 'development')){
 // 	routes.forEach(route => route.path = '/teachers/TOK' + route.path)
 // }
@@ -44,6 +70,15 @@ const router = createRouter({
 	scrollBehavior () {
 		window.scrollTo(0, 0)
 	}
+})
+
+router.beforeEach((to, from, next) => {
+	document.title = to.meta.title ? to.meta.title + " | CB TOK Exhbition" : "CB TOK Exhibition"
+	Vuex.commit('routeLoaded', false);
+	next()
+})
+router.afterEach(() => {
+	Vuex.commit('routeLoaded', true);
 })
 
 export default router

@@ -1,7 +1,13 @@
 <template>
+	<transition name="slide">
+	<Navbar></Navbar>
+	</transition>
 	<router-view v-slot="slotProps">
 		<transition name="fade" mode="out-in">
-			<component :is="slotProps.Component"></component>			
+			<component v-if="$store.state.routeLoaded" :is="slotProps.Component"></component>
+			<div v-else class="h-screen grid place-items-center">
+				<h1 class="text-4xl font-bold">LOADING</h1>
+			</div>
 		</transition>
 	</router-view>
 	<footitty></footitty>
@@ -10,10 +16,12 @@
 <script lang="ts">
 	import { defineComponent } from "vue"
 	import footer from '@/components/Footer.vue'
+	import Navbar from "./components/Navbar.vue"
 	export default defineComponent({
 		name:"App",
 		components:{
-			'footitty': footer
+			'footitty': footer,
+			Navbar,
 		}
 	})
 </script>
@@ -26,8 +34,18 @@
 }
 
 #nav {
-	padding: 30px;
-
+	&::before{
+		position:absolute;
+		top:0;
+		left:0;
+		content:'';
+		width: 100%;
+		height: 100%;
+		background-color: rgba(255, 255, 255, 0.8);
+		transform: scale(1.1);
+		backdrop-filter: blur(10px);
+		z-index: -1;
+	}
 	a {
 		font-weight: bold;
 		color: #2c3e50;

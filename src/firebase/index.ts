@@ -1,6 +1,5 @@
 import firebase from "firebase/app";
-import "firebase/analytics";
-import "firebase/storage";
+import "firebase/auth"
 import "firebase/firestore";
 
 const firebaseConfig = {
@@ -15,6 +14,8 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig)
 const db = firebase.firestore()
+const auth = firebase.auth()
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 
-export {db};
+export { db, auth};
 export default app;
