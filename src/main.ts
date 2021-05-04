@@ -8,5 +8,6 @@ import store from './store'
 import '@/CSS/tailwind.css'
 import '@/CSS/static.css'
 import '@/CSS/animations.css'
+import '@/assets/fonts/robato.css'
 
 createApp(App).use(store).use(router).mount('#app')

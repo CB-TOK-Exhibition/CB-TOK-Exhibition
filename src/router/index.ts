@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, RouteRecordRaw, createWebHashHistory } from 'vue-router'
 import Home from '@/Pages/Home.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -32,12 +32,14 @@ const routes: Array<RouteRecordRaw> = [
 	// }
 ]
 
-if (!(process.env.NODE_ENV === 'development')){
-	routes.forEach(route => route.path = '/teachers/TOK' + route.path)
-}
+
+// if (!(process.env.NODE_ENV === 'development')){
+// 	routes.forEach(route => route.path = '/teachers/TOK' + route.path)
+// }
 
 const router = createRouter({
-	history: createWebHistory(process.env.BASE_URL),
+	// history: createWebHistory(process.env.BASE_URL),
+	history: createWebHashHistory(),
 	routes,
 	scrollBehavior () {
 		window.scrollTo(0, 0)
