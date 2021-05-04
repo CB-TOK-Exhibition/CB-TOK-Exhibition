@@ -3,6 +3,7 @@
 ## Authorized by Mr. Richardson; CAS Project for Vansh, Amro, Edwin, Oscar
 
 ## Project setup
+See [Configuration Reference](https://cli.vuejs.org/config/).
 ```
 npm install
 ```
@@ -16,11 +17,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
