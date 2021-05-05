@@ -3,7 +3,9 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "serveOld": "npm run build && firebase emulators:start --only functions",
+    "serveSmall":"firebase emulators:start --only functions",
+    "serve":"npm run build -- --watch | firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -14,6 +16,8 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "basic-ftp": "^4.6.6",
+    "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.11.0"
   },

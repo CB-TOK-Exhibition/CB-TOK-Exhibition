@@ -3,9 +3,12 @@
         <div class="h-16"></div>
         <h1 class="text-4xl font-bold mb-6">Upload Page</h1>
         <div class="flex flex-row border-2 rounded-lg p-4 mb-10 gap-x-5">
-            <img :src="currentUser.photoURL" alt="" class="flex-0">
+            <img :src="currentUser.photoURL" alt="" class="flex-0 h-24 w-24">
             <div class="flex-1 flex items-center">
                 <h1 class="text-3xl font-bold">Current User: {{currentUser.displayName}}</h1>
+            </div>
+            <div class="flex-0 flex items-center">
+                <button class="border-2 p-4 rounded-lg noOutline focus:ring" @click="signOut">Sign Out</button>
             </div>
         </div>
         <form @submit="submit">
@@ -18,7 +21,7 @@
                 Click or Drop Files Here...
             </label>
 
-            <h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics</h1>
+            <h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics {{checked}}/3</h1>
             <div class="flex flex-col">
                 <label for="knower">
                     <input type="checkbox" v-on:change="limit" name="knower" id="knower">
@@ -46,7 +49,7 @@
                 </label>
             </div>
 
-            <button type="submit" class="mt-6 p-2 px-10 bg-blue-200 border-blue-400 border-2 rounded-lg font-bold noOutline focus:ring">Submit</button>
+            <button type="submit" :disabled="!formReady" class="mt-6 p-2 px-10 bg-blue-200 border-blue-400 disabled:opacity-50 disabled:cursor-default border-2 rounded-lg font-bold noOutline focus:ring">Submit</button>
         </form>
     </div>
 </template>
@@ -63,6 +66,7 @@ export default defineComponent({
             title:'',
             // eslint-disable-next-line
             currentUser: {} as any,
+            uploaded:false,
         }
     },
     created(){
@@ -101,6 +105,11 @@ export default defineComponent({
         ['dragenter'].forEach(eventName => dropArea.addEventListener(eventName, highlight, false));
         ['dragleave', 'drop'].forEach(eventName => dropArea.addEventListener(eventName, unhighlight, false));
     },
+    computed:{
+        formReady(vm){
+            return !!vm.title && vm.uploaded && vm.checked == 3;
+        }
+    },
     methods: {
         limit(e:Event){
             const limit = 3
@@ -113,7 +122,12 @@ export default defineComponent({
                 this.checked += 1
             }
         },
-        submit(e: Event){
+        signOut(e: Event){
+            e.preventDefault();
+            auth.signOut();
+            this.$router.push('/uploadInstructions')
+        },
+        async submit(e: Event){
             e.preventDefault()
             console.log("Submit Start")
             //check if all needed elements are here
@@ -123,11 +137,21 @@ export default defineComponent({
                 console.error("Form Incomplete")
                 return;
             }
-            
-            //upload to database
-
 
             //upload to FTP
+            
+            //upload to database
+            // db.collection("publishedUsers").doc().set({
+            //     email: this.currentUser.email
+            // })
+
+            // db.collection("projects").doc().set({
+            //     class:"6",
+            //     filePath:"yeet.pdf",
+            //     imageFeature:"image.jpg",
+            //     rating:5,
+            //     topics:[1, 2, 3]
+            // })
         },
         dropHandle(e: DragEvent){
             const dt = e.dataTransfer
@@ -143,6 +167,9 @@ export default defineComponent({
                 console.error("PDF ONLY");
                 return;
             }
+
+            console.log("Upload")
+            this.uploaded = true;
             const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
             if(!fileInput){console.error("[BACKEND] INPUT DOES NOT EXIST");return}
             fileInput.files = files
