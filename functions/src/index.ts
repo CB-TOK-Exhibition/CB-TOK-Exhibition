@@ -25,8 +25,8 @@ const getClient = async (): (Promise<Client | string>) => {
 	const client = new ftp.Client();
 	await client.access({
 		host: "colonelby.com",
-		user: "cbtok12345",
-		password: "CougarsTOK21"
+		user: "NO",
+		password: "FUCK YOU"
 	}).catch(err => {
 		console.error("Error accessing Client")
 		return "error"
