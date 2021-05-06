@@ -48,6 +48,14 @@ const routes: Array<RouteRecordRaw> = [
 		name: "Project Page",
 		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue')
 	},
+	{
+		path: '/test',
+		name: 'Test',
+		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Test.vue'),
+		meta: {
+			title: "Test"
+		}
+	},
 	// {
 	//   path: '/about',
 	//   name: 'About',

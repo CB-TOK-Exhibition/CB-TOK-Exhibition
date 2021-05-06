@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen">
+    <div class="min-h-screen pt-16">
         {{project.id}}
         {{project.projectTitle}}
         {{project.topics}}
@@ -11,6 +11,10 @@
             </p>
         </div>
         <img :src="project.imageFeature" alt="Project Image">
+            <object id="pdfIframe" class="w-full h-56" data="" type="application/pdf">
+                <embed src="" type="application/pdf" />
+            </object>
+        <a id="athing" href="">yeetus</a>
     </div>
 </template>
 <script lang="ts">
@@ -28,7 +32,7 @@ export default defineComponent({
             topicColours: topicColours
         }
     },
-    async created(){
+    async mounted(){
         const projectID = this.$route.fullPath.substring(1)
         const docRef = db.collection('projects').doc(projectID)
         
@@ -46,6 +50,40 @@ export default defineComponent({
             else this.$router.push('/')
         }
         else this.$router.push('/')
+
+        const request = await fetch(`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/testFile.pdf`, { //${this.project.filePath}
+            method: 'GET',
+            mode: 'cors'
+        }).catch(err=>{
+            //TODO Display this error
+            console.error(err)
+        })
+        if(!request || !request?.body){console.error("FILE NOT FOUND");return;}
+        const rawFile = await request.body.getReader().read()
+        if(!rawFile.value) return
+
+
+
+        // READER
+        // var reader = new FileReader();
+        // reader.onload = function(){
+        //     const dataURL = reader.result as string;
+        //     if(!dataURL) return
+        //     (document.getElementById("pdfIframe") as HTMLIFrameElement).src = dataURL;
+        // };
+        // reader.readAsArrayBuffer(blob);
+
+        const string = new TextDecoder().decode(rawFile.value);
+        console.log(string)
+
+        const blob = new Blob([rawFile.value], { type: 'application/pdf' }); 
+        const url = URL.createObjectURL(blob);
+
+        const pdfIframe = document.getElementById("pdfIframe") as HTMLObjectElement
+        if(!pdfIframe) return;
+        pdfIframe.data = url;
+        (pdfIframe.querySelector("embed") as HTMLEmbedElement).src = url;
+        (document.getElementById("athing")as HTMLAnchorElement).href = url
     }
 })
 </script>

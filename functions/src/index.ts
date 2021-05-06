@@ -1,9 +1,16 @@
 import * as functions from "firebase-functions";
 import * as express from "express";
-import * as ftp from "basic-ftp";
+import { Request, Response, NextFunction } from 'express'
+import * as cors from 'cors'
+
+//FTP THINGS
+import * as basic_ftp from "basic-ftp";
 import { Client } from "basic-ftp";
+
+//FILE SYSTEM THINGS
 import * as path from 'path'
-import { Readable } from 'stream';
+import * as streamBuffers from 'stream-buffers'
+import { Readable, Writable } from 'stream';
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
@@ -15,35 +22,28 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 
 // EXPRESS
 const app = express();
-const cors = require('cors')({ origin: true });
+app.use(cors({ origin: true }));
 app.use(express.json())
-app.use(cors);
+app.use(express.urlencoded({ extended: false }))
+
 
 //FTP THINGS
-const getClient = async (): (Promise<Client | string>) => {
+const getClient = async (): (Promise<Client>) => {
 	// console.log(await client.list())
-	const client = new ftp.Client();
+	const client = new basic_ftp.Client()
+	client.ftp.verbose = true
 	await client.access({
 		host: "colonelby.com",
 		user: "NO",
 		password: "FUCK YOU"
 	}).catch(err => {
-		console.error("Error accessing Client")
-		return "error"
+		throw err;
 	})
 	return client;
 }
 
 /* #region  READING FILES */
-const getFile = async (fileName: string) => {
-	const client = await getClient()
-	if (client == "error" || typeof client == "string") return "error";
-	client.close()
-	// const file = await client.downloadTo("README_COPY.md", "README_FTP.md")
-	// return file
-}
-
-app.get("/get", (req, res, next) => {
+app.get("/get/:fileName", runAsync(async (req: Request, res:Response, next:NextFunction) => {
 	const errorFunction = (err: Error) => {
 		if (err) next(err)
 	}
@@ -55,36 +55,60 @@ app.get("/get", (req, res, next) => {
 			'x-sent': true
 		}
 	}
-	const file = getFile(req.body)
-	if (typeof file == "string" && file == "") { res.status(401); res.send("Unable to get file") }
-	// res.sendFile(file, options, errorFunction)
-})
-/* #endregion */
 
+	const client = await getClient().catch(err => { throw err })
+
+	const write = new streamBuffers.WritableStreamBuffer();
+	console.log(`/pdfs/${req.params.fileName}`)
+	await client.downloadTo(write, `/pdfs/${req.params.fileName}`).catch(err => { throw err })
+	await client.downloadTo('./test.pdf', `/pdfs/${req.params.fileName}`).catch(err => { throw err })
+	write.end()
+
+	res.setHeader('Content-Length', write.size());
+	res.contentType("application/pdf");
+	res.setHeader('content-disposition', 'attachment; filename=name.pdf');
+
+	// write.pipe(res)
+	res.send(write.getContentsAsString())
+	client.close()
+}))
+/* #endregion */
 
 /* #region  WRITING FILES */
 const putFile = async (file: Readable) => {
-	const client = await getClient()
-	if (client == "error" || typeof client == "string") return "error";
-
-	await client.uploadFrom(file, "/pdfs/testFile.pdf").catch(err=>{
+	const client = await getClient().catch(err => {
+		throw err;
+	})
+	await client.uploadFrom(file, "/pdfs/testFile.pdf").catch(err => {
 		client.close()
-		return "error"
+		throw err;
 	})
 	client.close()
-	return "success"
 }
 
-app.get("/write", async (req, res, next) => {
-	const result = await putFile(req.body)
-	if (result == "success") {
-		res.send("Write Success!")
-	} else if (result == "error") {
-		res.status(401);
-		res.send("Error writing file")
-	}
-});
+app.post("/write", runAsync(async ({ body }: Request, res: Response) => {
+	const file = body as Buffer;
+	const penis = new streamBuffers.ReadableStreamBuffer();
+	penis.put(file);
+	penis.stop();
+
+	await putFile(penis).catch(err => {
+		res.status(500).send(err)
+		return
+	})
+	res.send("Write Success!")
+}));
 /* #endregion */
 
 
-exports.ftp = functions.https.onRequest(app);
+export const ftp = functions.https.onRequest(app);
+
+
+/* #region  HELPER */
+type appAction = (arg0: Request, arg1: Response, arg2: NextFunction) => any;
+function runAsync(callback: appAction) {
+	return (req: Request, res: Response, next: NextFunction) => {
+		callback(req, res, next).catch(next)
+	}
+}
+/* #endregion */

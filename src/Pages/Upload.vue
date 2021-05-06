@@ -18,7 +18,12 @@
             <h1 class="text-2xl font-bold mb-2 mt-6">Drop Files Here</h1>
             <input type="file" class="hidden" name="fileInput" id="fileInput" accept="application/pdf">
             <label for="fileInput" id="dropArea" class="h-24 w-56 border-2 inline-grid place-items-center cursor-pointer" @drop="dropHandle($event)">
-                Click or Drop Files Here...
+                <p class="inline-block">
+                    Click or Drop Files Here...
+                </p>
+                <p class="inline-block">
+                    {{fileName}}
+                </p>
             </label>
 
             <h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics {{checked}}/3</h1>
@@ -67,6 +72,7 @@ export default defineComponent({
             // eslint-disable-next-line
             currentUser: {} as any,
             uploaded:false,
+            fileName:'',
         }
     },
     created(){
@@ -132,13 +138,18 @@ export default defineComponent({
             console.log("Submit Start")
             //check if all needed elements are here
             const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
-            if(!(this.title && fileInput.files?.length != 0 && this.checked == 3)){
+            if(!(this.title) || !fileInput.files || fileInput.files?.length == 0 || !(this.checked == 3)){
                 //TODO USER UI THING
                 console.error("Form Incomplete")
                 return;
             }
 
             //upload to FTP
+            fetch('http://localhost:5001/cb-tok-exhibition/us-central1/ftp/write', {
+                method: 'POST',
+                mode: 'cors',
+                body: fileInput.files[0]
+            })
             
             //upload to database
             // db.collection("publishedUsers").doc().set({
@@ -169,7 +180,12 @@ export default defineComponent({
             }
 
             console.log("Upload")
+            const file = files[0]
+            console.log(file)
+            this.fileName = file.name;
             this.uploaded = true;
+
+
             const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
             if(!fileInput){console.error("[BACKEND] INPUT DOES NOT EXIST");return}
             fileInput.files = files
