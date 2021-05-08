@@ -6,6 +6,7 @@
     "serveOld": "npm run build && firebase emulators:start --only functions",
     "serveSmall": "firebase emulators:start --only functions",
     "serve": "npm run build -- --watch | firebase emulators:start --only functions",
+    "serveDebug": "npm run build -- --watch | firebase emulators:start --only functions --inspect-functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
