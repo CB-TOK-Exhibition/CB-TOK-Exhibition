@@ -5,9 +5,7 @@ export default async (): (Promise<Client>) => {
     const client = new basic_ftp.Client()
     client.ftp.verbose = true
     await client.access({
-        host: "colonelby.com",
-        user: "cbtok12345",
-        password: "CougarsTOK21"
+        host: "colonelby.com"
     }).catch(err => {
         throw err;
     })
