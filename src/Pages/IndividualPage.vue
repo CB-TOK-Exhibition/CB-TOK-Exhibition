@@ -1,20 +1,21 @@
 <template>
-	<div class="min-h-screen pt-16">
-		{{project.id}}
-		{{project.projectTitle}}
-		{{project.topics}}
-		{{project.class}}
-		{{project.filePath}}
-		<div id="tagList" class="flex flex-row gap-x-2 gap-y-2 flex-wrap">
-			<p v-for="(tag, i) in project.topics" :key="i" :style="{ backgroundColor: topicColours[tag-1]}" class="p-1 px-3 rounded-full text-sm text-white font-semibold">
-				{{topicsList[tag-1]}}
-			</p>
+	<div class="min-h-screen pt-16 bg-red-200">
+		<div class="grid grid-cols-2">
+			<div>
+				{{project.id}}
+				{{project.projectTitle}}
+				{{project.topics}}
+				{{project.class}}
+				{{project.filePath}}
+				<div id="tagList" class="flex flex-row gap-x-2 gap-y-2 flex-wrap">
+					<p v-for="(tag, i) in project.topics" :key="i" :style="{ backgroundColor: topicColours[tag-1]}" class="p-1 px-3 rounded-full text-sm text-white font-semibold">
+						{{topicsList[tag-1]}}
+					</p>
+				</div>
+			</div>
+			<img :src="project.imageFeature" alt="Project Image">
 		</div>
-		<img :src="project.imageFeature" alt="Project Image">
-			<object id="pdfIframe" class="w-full h-56" data="" type="application/pdf">
-				<embed src="" type="application/pdf" />
-			</object>
-		<a id="athing" href="">yeetus</a>
+		<div id="pdfIframe" class="w-full h-screen lg:px-64" />
 	</div>
 </template>
 <script lang="ts">
@@ -23,16 +24,17 @@ import { defineComponent } from "@vue/runtime-core";
 import {db} from '@/firebase'
 import {topicsList, topicColours} from "../types/projects";
 
+
 export default defineComponent({
 	name:"Project Page",
 	data() {
 		return {
 			project:{} as project,
 			topicsList: topicsList,
-			topicColours: topicColours
+			topicColours: topicColours,
 		}
 	},
-	async mounted(){
+	async created(){
 		const projectID = this.$route.fullPath.substring(1)
 		const docRef = db.collection('projects').doc(projectID)
 		
@@ -51,48 +53,63 @@ export default defineComponent({
 		}
 		else this.$router.push('/')
 
+		const url = await this.getURL().catch(err=> console.error("A caught error: ", err));
+		if(!url) throw "URL Empty"
 
-		//FUNCTIONS METHOD
-		const request = await fetch(`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/testFile4.pdf`, { //${this.project.filePath}
-			method: 'GET',
-			mode: 'cors'
-		}).catch(err=>{
-			//TODO Display this error
-			console.error(err)
-		})
+		console.log("this.url set to", url)
+		this.mount(url);
+	},
+	methods: {
+		async getURL(): Promise<(string)>{
+			const request = await fetch(`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/${this.project.filePath}`,{
+				method: 'GET',
+				mode: 'cors'
+			}).catch(err=>{
+				//TODO Display this error
+				console.error("A caught error: " + err.message)
+			})
 
-		if(!request || !request?.body){console.error("FILE NOT FOUND");return;}
-		const bodyReader = request.body.getReader();
-		// eslint-disable-next-line no-constant-condition
-		while (true) {
-			const { done, value } = await bodyReader.read();
-			if (done) break;
-			console.log('Just read a chunk:', value);
+			await fetch(`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/getControl`, {
+				method: 'GET',
+				mode: 'cors'
+			}).catch(err=>console.error("A caught error: " + err.message))
+
+			if(!request || !request?.body) throw "FILE NOT FOUND"
+			const bodyReader = request.body.getReader();
+			let final = new Uint8Array();
+			for (let result = await bodyReader.read(); !result.done; result = await bodyReader.read()) final = this.concatenate(Uint8Array, final, result.value)
+			
+			return URL.createObjectURL(new Blob([final], { type: 'application/pdf' }));
+		},
+		mount(url: string){
+			//INJECT ELEMENT
+			if(!url) throw "URL Empty"
+			const obj = document.createElement("object");
+			obj.type = "application/pdf";
+			obj.data = url;
+			obj.classList.add("w-full")
+			obj.classList.add("h-full")
+			const embed = document.createElement("embed");
+			embed.type = "application/pdf";
+			embed.src = url;
+			obj.appendChild(embed);
+			const div = document.getElementById("pdfIframe")
+			if(div) div.appendChild(obj);
+		},
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		concatenate(resultConstructor: any, ...arrays: any[]) {
+			let totalLength = 0;
+			for (let arr of arrays) {
+				totalLength += arr.length;
+			}
+			let result = new resultConstructor(totalLength);
+			let offset = 0;
+			for (let arr of arrays) {
+				result.set(arr, offset);
+				offset += arr.length;
+			}
+			return result;
 		}
-
-		// const rawFile = await request.body.getReader().read()
-		// if(!rawFile.value) return
-		// // const string = new TextDecoder().decode(rawFile.value);
-		// // console.log(string);
-		// const blob = new Blob([rawFile.value], { type: 'application/pdf' }); 
-		// const url = URL.createObjectURL(blob);
-		// console.log("blob information", blob.type, blob.size)
-
-		// const pdfIframe = document.getElementById("pdfIframe") as HTMLObjectElement
-		// if(!pdfIframe) return;
-		// pdfIframe.data = url;
-		// (pdfIframe.querySelector("embed") as HTMLEmbedElement).src = url;
-		// (document.getElementById("athing")as HTMLAnchorElement).href = url
-
-
-		// READER
-		// var reader = new FileReader();
-		// reader.onload = function(){
-		//     const dataURL = reader.result as string;
-		//     if(!dataURL) return
-		//     (document.getElementById("pdfIframe") as HTMLIFrameElement).src = dataURL;
-		// };
-		// reader.readAsArrayBuffer(blob);
 	}
 })
 </script>

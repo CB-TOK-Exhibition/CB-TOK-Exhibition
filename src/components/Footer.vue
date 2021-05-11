@@ -10,17 +10,18 @@
         <div class="mb-6 md:mb-0">
             <h1 class="text-3xl font-bold mb-2">Sitemap</h1>
             <ul>
-                <li class="text-lg font-semibold"><router-link to="/">Home</router-link></li>
-                <li class="text-lg font-semibold"><router-link to="/discover">Discover</router-link></li>
-                <li class="text-lg font-semibold"><router-link to="/search">Search</router-link></li>
+                <li class="text-xl font-semibold"><router-link to="/">Home</router-link></li>
+                <li class="text-xl font-semibold"><router-link to="/discover">Discover</router-link></li>
+                <li class="text-xl font-semibold"><router-link to="/search">Search</router-link></li>
+                <li class="text-xl font-semibold"><router-link to="/upload">Upload</router-link></li>
             </ul>
         </div>
         <div>
             <h1 class="text-3xl font-bold mb-2">Contact</h1>
 
-            <h2 class="font-medium"><span class="font-semibold">Created</span> by the Students of CB</h2>
-            <h2 class="font-medium"><span class="font-semibold">Organized</span> by Mr.Richardson</h2>
-            <h2 class="font-medium"><span class="font-semibold">Realized</span> by Amro, Briana, Brandon, Edwin, Oscar, Vansh, Aarya, Richard</h2>
+            <h2 class="font-medium text-xl"><span class="font-semibold">Created</span> by the Students of CB</h2>
+            <h2 class="font-medium text-xl"><span class="font-semibold">Organized</span> by Mr.Richardson</h2>
+            <h2 class="font-medium text-xl"><span class="font-semibold">Realized</span> by Amro, Briana, Brandon, Edwin, Oscar, Vansh, Aarya, Richard</h2>
         </div>
     </footer>
 </template>

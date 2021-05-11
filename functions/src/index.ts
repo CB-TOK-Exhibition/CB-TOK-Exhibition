@@ -11,8 +11,12 @@ app.use(express.urlencoded({ extended: false }))
 /* #region  READING FILES */
 import getFiles from './getFiles'
 import writeFiles from './writeFiles'
+import path = require('path');
 app.get("/get/:fileName", runAsync(getFiles))
 app.post("/write", runAsync(writeFiles));
+app.get("/getControl", (req, res) =>{
+	res.sendFile(path.join(__dirname,'../test.pdf'))
+})
 
 
 // Start writing Firebase Functions
