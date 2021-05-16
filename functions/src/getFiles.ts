@@ -22,7 +22,7 @@ export default async (req: Request, res: Response) => {
 
     //DOWNLOAD
     await client.downloadTo(out, `/pdfs/${req.params.fileName}`).catch(err => { throw err })
-    await client.downloadTo('./test.pdf', `/pdfs/${req.params.fileName}`).catch(err => { throw err })
+    // await client.downloadTo('./test.pdf', `/pdfs/${req.params.fileName}`).catch(err => { throw err })
     console.log('post download')
     out.end()
     res.end()

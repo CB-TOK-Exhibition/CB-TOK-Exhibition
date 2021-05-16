@@ -61,7 +61,8 @@ export default defineComponent({
 	},
 	methods: {
 		async getURL(): Promise<(string)>{
-			const request = await fetch(`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/${this.project.filePath}`,{
+			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.filePath}` //`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/${this.project.filePath}`
+			const request = await fetch(url, {
 				method: 'GET',
 				mode: 'cors'
 			}).catch(err=>{

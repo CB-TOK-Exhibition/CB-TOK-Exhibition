@@ -2,10 +2,12 @@ export default interface project{
     id:string,
     projectTitle: string,
     topics: number[],
-    class: string,
     imageFeature: string,
     rating:number,
-    filePath: string
+    filePath: string,
+
+    class: string,
+    year:string,
 }
 
 const topicsList = ["Knowledge and the Knower" ,"Knowledge and Language" ,"Knowledge and Tech" ,"Knowledge and Religion" ,"Knowledge and Politics" ,"Knowledge and Indigenous Societies"]
