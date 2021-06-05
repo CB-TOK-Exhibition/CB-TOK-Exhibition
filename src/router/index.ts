@@ -27,15 +27,38 @@ const routes: Array<RouteRecordRaw> = [
 			title: "Discover"
 		}
 	},
+
+	//ADMIN PAGES
 	{
 		path:'/admin',
 		name: 'Admin',
-		component: () => import(/* webpackChunkName "admin" */'@/Pages/Admin.vue'),
+		component: () => import(/* webpackChunkName "admin" */'@/Pages/Admin/Admin.vue'),
+		meta: {
+			title: "Admin"
+		}
 	},
+	{
+		path: '/adminNewClass',
+		name: 'AdminNewClass',
+		component: () => import(/* webpackChunkName "adminNewClass" */'@/Pages/Admin/AdminNewClass.vue'),
+		meta: {
+			title: "Admin New Class"
+		}
+	},
+	{
+		path: '/adminNewYear',
+		name: 'AdminNewYear',
+		component: () => import(/* webpackChunkName "adminNewYear" */'@/Pages/Admin/AdminNewYear.vue'),
+		meta: {
+			title: "Admin New Year"
+		}
+	},
+
+
 	{
 		path: '/upload',
 		name: 'Upload',
-		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Upload.vue'),
+		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Upload/Upload.vue'),
 		meta: {
 			title: "Upload"
 		}
@@ -51,7 +74,7 @@ const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/uploadCheck',
 		name: 'Upload Check',
-		component: () => import(/* webpackChunkName: "uploadCheck" */'@/Pages/UploadCheck.vue'),
+		component: () => import(/* webpackChunkName: "uploadCheck" */'@/Pages/Upload/UploadCheck.vue'),
 		meta: {
 			title: "Upload Check"
 		}
@@ -99,6 +122,7 @@ router.beforeEach((to, from, next) => {
 	next()
 })
 router.afterEach(() => {
+	console.log("router after")
 	Vuex.commit('routeLoaded', true);
 })
 

@@ -1,5 +1,5 @@
 <template>
-	<transition name="fade">
+	<transition name="fade" mode="out-in">
 	<div v-if="!userDetermined" class="h-screen bg-green-400" key="loading">
 		Loading
 	</div>
@@ -26,7 +26,7 @@ export default defineComponent({
 	data() {
 		return {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			currentUser: {} as any,
+			currentUser: {},
 			userDetermined: false,
 			userSubmitted:false,
 		}
@@ -34,10 +34,8 @@ export default defineComponent({
 	async created(){
 		auth.onAuthStateChanged(async (user)=>{
 			//logged in
-			if (user) {
-				const user = auth.currentUser;
+			if (user && user != null) {
 				this.currentUser = user
-
 				//check if user has already submitted
 				const snapshot = await db.collection('publishedUsers').where("email", "==", user?.email).get().catch(err => {
 					console.error(err);

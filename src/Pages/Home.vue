@@ -3,9 +3,12 @@
         <div id="splash" class="text-white">
             <h1 class="text-6xl lg:text-7xl leading-none font-bold">CB TOK EXHIBITION</h1>
             <h2 class="text-2xl lg:text-4xl pt-5 font-semibold">A repository of exhibitions for theory of knowledge</h2>
-            <div id="buttonRow" class="flex flex-col md:flex-row justify-center gap-x-10 mt-10 mx-5 lg:mx-0">
+            <div id="buttonRow" class="flex flex-col md:flex-row justify-center gap-x-6 mt-10 mx-5 lg:mx-0">
                 <router-link to="/search" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring mb-4 lg:mb-0"> 
                     SEARCH
+                </router-link>
+                <router-link to="/upload" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring"> 
+                    POST
                 </router-link>
                 <router-link to="/discover" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring"> 
                     DISCOVER

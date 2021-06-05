@@ -54,21 +54,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import {auth,db} from '@/firebase'
 
 import { Octokit } from "@octokit/core";
-import {topicsList} from '@/types/projects'
+import project, {topicsList} from '@/types/projects'
+import okboomer from '@/types/okbm'
 
-interface okboomer{
-	name: string,
-	code: string
-}
+import {User} from '@firebase/auth-types'
+
 export default defineComponent({
     name:"Form",
     props:{
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-        currentUser:{} as any
+        currentUser: {
+			required: true,
+			type: Object as PropType<User>
+		}
     },
     data() {
         return {
@@ -102,7 +103,7 @@ export default defineComponent({
 				},
 			],
 			checkedTopics:[] as string[],
-			selectedClass:null,
+			selectedClass:{} as okboomer,
 			classes:[] as okboomer[],
         }
     },
@@ -192,7 +193,7 @@ export default defineComponent({
 					owner: 'CB-TOK-Exhibition',
 					repo: 'databasePDFs',
 					path: this.fileName,
-					message: 'message',
+					message: `[API] Uploading file for ${this.currentUser.displayName}`,
 					content: (event.target.result as string).substring(28, (event.target.result as string).length),
 				}).catch(err=>{
 					console.error(err);
@@ -200,6 +201,25 @@ export default defineComponent({
 				}))
 			};
 			
+			//upload to database
+			await db.collection("publishedUsers").doc().set({
+				email: this.currentUser.email
+			})
+
+			await db.collection("projects").doc().set({
+					class: this.selectedClass.name as string,
+					year: this.getSchoolYear(),
+					
+					projectTitle: this.title,
+					filePath: this.fileName,
+					//TODO FIGURE THIS OUT
+					imageFeature: "image.jpg",
+					rating: 0,
+					topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
+				} as project
+			)
+
+			this.$router.push("/uploadCheck")
 
 			//OR UPLOAD TO FTP
 			// fetch('http://localhost:5001/cb-tok-exhibition/us-central1/ftp/write', {
@@ -207,22 +227,6 @@ export default defineComponent({
 			//     mode: 'cors',
 			//     body: fileInput.files[0]
 			// })
-			
-			//upload to database
-			await db.collection("publishedUsers").doc().set({
-				email: this.currentUser.email
-			})
-
-			await db.collection("projects").doc().set({
-				class: this.selectedClass,
-				filePath: this.fileName,
-				//TODO FIGURE THIS OUT
-				imageFeature: "image.jpg",
-				rating: 0,
-				topics: this.checkedTopics.map(topic => topicsList.indexOf(topic))
-			})
-
-			this.$router.push("/uploadCheck")
 		},
         dropHandle(e: DragEvent){
 			const dt = e.dataTransfer

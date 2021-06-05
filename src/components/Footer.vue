@@ -1,5 +1,5 @@
 <template>
-    <footer class="w-full py-14 px-10 md:px-20 bg-gray-200 flex flex-col md:grid grid-cols-none md:grid-cols-3 grid-rows-3 md:grid-rows-none gap-x-4">
+    <footer class="w-full py-14 px-10 md:px-20 bg-gray-100 flex flex-col md:grid grid-cols-none md:grid-cols-3 grid-rows-3 md:grid-rows-none gap-x-4">
         <div class="mb-6 md:mb-0">
             <div class="flex flex-row gap-x-6 mb-4">
                 <img class="h-20 w-20 md:h-24 md:w-24 mr-4 lg:mr-0" src="@/assets/ib.svg" alt="IB Logo">

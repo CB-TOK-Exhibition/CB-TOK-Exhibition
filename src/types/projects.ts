@@ -1,5 +1,5 @@
 export default interface project{
-    id:string,
+    id?:string,
     projectTitle: string,
     topics: number[],
     imageFeature: string,
@@ -8,6 +8,11 @@ export default interface project{
 
     class: string,
     year:string,
+}
+
+export interface yearContainer{
+    year:string,
+    classes:string[]
 }
 
 const topicsList = ["Knowledge and the Knower" ,"Knowledge and Language" ,"Knowledge and Tech" ,"Knowledge and Religion" ,"Knowledge and Politics" ,"Knowledge and Indigenous Societies"]

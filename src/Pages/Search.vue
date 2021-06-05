@@ -12,8 +12,12 @@
             <div id="searchBar" class="w-full">
                 <input type="search" class="border-4 border-gray-300 w-full p-4 rounded-xl noOutline focus:ring text-xl hover:shadow-lg" name="search" id="search" v-model="search">
             </div>
-            <div class="w-full mt-4">filter by: </div>
-            <div id="searchResults" class="h-full w-full py-10 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
+            <div class="flex flex-row mt-4">
+                <Dropdown @change="updateProjects" v-model="filterYear" :options="years" optionLabel="name" placeholder="Filter Year..."/>
+            </div>
+
+            <transition name="fade" mode="out-in">
+            <div id="searchResults" v-if="projectsLoaded && projectList.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
                 <div v-for="(project, i) in projectList" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl" :key="i">
                     <router-link :to="`/${project.id}`">
                         <!-- IMAGE -->
@@ -23,11 +27,7 @@
                         <div class="p-4">
                             <p class="font-bold text-3xl mt-4 text-center">{{project.projectTitle}}</p>
                             <!-- TAG LIST -->
-                            <div id="tagList" class="flex flex-row gap-x-2 gap-y-2 mt-6 flex-wrap justify-center">
-                                <p v-for="(tag, i) in project.topics" :key="i" :style="{ backgroundColor: topicColours[tag-1]}" class="p-1 px-3 rounded-full text-sm text-white font-semibold">
-                                    {{topicsList[tag-1]}}
-                                </p>
-                            </div>
+                            <Pods :topics="project.topics"></Pods>
 
                             <!-- STARS -->
                             <div class="flex flex-row justify-center mt-3">
@@ -38,35 +38,73 @@
                     </router-link>
                 </div>
             </div>
+            <div v-else class="w-full mt-10">
+                <h1 class="text-3xl font-bold">No Projects Found</h1>
+            </div>
+            </transition>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-//TODO FILTER BY DROPDOWNS
 import {defineComponent} from 'vue'
 import project from '@/types/projects'
-import {topicsList, topicColours} from "../types/projects"
+import {topicsList} from "../types/projects"
 import {db} from '@/firebase'
+import okboomer from '@/types/okbm'
+import Pods from "@/components/Pods.vue"
 
 export default defineComponent({
     name:'Search',
+    components:{Pods},
     data() {
         return {
             search:"",
             projectList:[] as project[],
             topicsList: topicsList,
-            topicColours: topicColours
+
+            projectsLoaded: false,
+
+            filterYear:{} as okboomer,
+            years:[
+                {
+                    name:"2020-2021",
+                    code:"2020-2021"
+                }
+            ] as okboomer[],
+
+            filterClass:{} as okboomer,
         }
     },
-    async created(){
-        const docRef = db.collection('projects');
-        const querySnapshot = await docRef.get()
-        querySnapshot.forEach((doc) => {
-            let project = doc.data() as project
-            project.id = doc.id
-            this.projectList.push(project)
-        });
+    created(){
+        this.updateProjects();
+    },
+    methods:{
+        async updateProjects(){
+            this.projectsLoaded = false;
+            this.projectList = await this.getProjects();
+            this.projectsLoaded = true;
+        },
+        async getProjects(){
+            //TODO UPDATE SEARCHING ALGORITHM
+            let out = [] as project[]
+
+            const ref = db.collection('projects');
+            let query;
+            if(this.filterYear.name) query = ref.where("year", "==", this.filterYear.name)
+            if(this.filterClass.name) query = ref.where("class", "==", this.filterClass.name)
+
+            let querySnapshot;
+            if(query) querySnapshot = await query.get();
+            else querySnapshot = await ref.get()
+
+            querySnapshot.forEach((doc) => {
+                let project = doc.data() as project
+                project.id = doc.id
+                out.push(project)
+            });
+            return out
+        }
     }
 })
 </script>
