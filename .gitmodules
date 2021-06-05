@@ -1,0 +1,3 @@
+[submodule "databasePDFs"]
+	path = databasePDFs
+	url = https://github.com/CB-TOK-Exhibition/databasePDFs.git

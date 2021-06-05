@@ -122,7 +122,6 @@ router.beforeEach((to, from, next) => {
 	next()
 })
 router.afterEach(() => {
-	console.log("router after")
 	Vuex.commit('routeLoaded', true);
 })
 

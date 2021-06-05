@@ -27,6 +27,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {db} from "@/firebase"
+import { Octokit } from "@octokit/core";
 
 export default defineComponent({
     name:"Admin New Class",
@@ -42,11 +43,15 @@ export default defineComponent({
         const month = dateMachine.getMonth();
         if(month < 9) this.releventYears =  (year - 1) + "-" + year
         else if (month >= 9) this.releventYears = year + "-" + (year + 1)
-
-        // let yearsObject = (await db.collection("years").doc(this.releventYears).get()).data() as {classes: string[]}
-        // this.classes = yearsObject.classes
+        
+        //CHECK IF THIS YEAR EXISTS
+        const yearRef = await db.collection("years").doc(this.releventYears).get()
+        if(!yearRef || !yearRef.exists){
+            //TODO Year not created, go create a new year
+            console.error("Year Has Not Been Created Yet")
+        }
+        //LIVE UPDATE CLASSES
         db.collection("years").doc(this.releventYears).onSnapshot(doc=>{
-            console.log("UPDATE??")
             const yearObject = doc.data() as {classes: string[]}
             this.classes = yearObject.classes
         })
@@ -59,11 +64,16 @@ export default defineComponent({
             }
             const val = (document.getElementById("newClassName") as HTMLInputElement).value;
             this.classes.push(val);
-            (document.getElementById("newClassName") as HTMLInputElement).value = ""
+            db.collection("years").doc(this.releventYears).update({
+                classes: this.classes
+            })
+
+            //Reset input
+            ;(document.getElementById("newClassName") as HTMLInputElement).value = ""
         },
 
         // eslint-disable-next-line
-        promptRemoveClass(classNum: number){
+        async promptRemoveClass(classNum: number){
             //TODO PROMPT HIM TO MAKE SURE THAT HE WANTS TO DELETE THIS CLASS
 
             //UNCOMMENT ONLY WHEN DONE
@@ -79,10 +89,29 @@ export default defineComponent({
             })
             
             //REMOVE THE CLASS FROM THE PROJECT DUMP
-            console.log("remove classes", this.releventYears, relevantClass)
-
             const removeClasses = await db.collection("projects").where("year", "==", this.releventYears).where("class", "==", relevantClass).get()
             removeClasses.forEach(thing=> thing.ref.delete())
+
+            //REMOVE THE CLASS FROM GITHUB
+			const octokit = new Octokit({ auth: process.env.VUE_APP_ACCESS_CODE });
+            const responce = await octokit.request(`GET /repos/{owner}/{repo}/contents/${this.releventYears}/${this.classes[classNum]}`, {
+                owner: 'CB-TOK-Exhibition',
+                repo: 'databasePDFs',
+            }).catch(err=>{
+                console.log("ERROR =>", err)
+            })
+
+            if(!responce) return
+            responce.data.forEach((file: { path: string, sha:string})=>{
+                console.log(file)
+                octokit.request('DELETE /repos/{owner}/{repo}/contents/{path}', {
+					owner: 'CB-TOK-Exhibition',
+					repo: 'databasePDFs',
+					path: file.path,
+					message: `[API] Deleting file in year ${this.releventYears} and class ${this.classes[classNum]}`,
+                    sha:file.sha
+				})
+            })
         },
         submit(){
             db.collection("years").doc(this.releventYears).set({

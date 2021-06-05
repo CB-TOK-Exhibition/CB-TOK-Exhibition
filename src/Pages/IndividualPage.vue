@@ -51,23 +51,24 @@ export default defineComponent({
 		this.project.id = projectID
 
 		const url = await this.getURL().catch(err=> console.error("A caught error: ", err));
-		if(!url) throw "URL Empty"
-
+		if(!url){
+			//TODO HANDLE URL EMPTY
+			console.error("url is empty")
+			return
+		}
 		console.log("this.url set to", url)
 		this.mount(url);
 	},
 	methods: {
 		async getURL(): Promise<(string)>{
 			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${this.project.filePath}` //`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/${this.project.filePath}`
+			
 			const request = await fetch(url, {
 				method: 'GET',
 				mode: 'cors'
-			}).catch(err=>{
-				//TODO Display this error
-				console.error("A caught error: " + err.message)
 			})
 
-			if(!request || !request?.body) throw "FILE NOT FOUND"
+			if(!request || !request?.body || !request.ok) throw "FILE NOT FOUND"
 			const bodyReader = request.body.getReader();
 			let final = new Uint8Array();
 			for (let result = await bodyReader.read(); !result.done; result = await bodyReader.read()) final = this.concatenate(Uint8Array, final, result.value)
