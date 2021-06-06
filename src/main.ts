@@ -15,7 +15,11 @@ import '@/assets/fonts/robato.css'
 import 'primevue/resources/themes/saga-blue/theme.css'
 import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
+import Toast from 'primevue/toast';
+import ToastService from 'primevue/toastservice';
+
 
 const app = createApp(App)
-app.use(store).use(router).use(PrimeVue).mount('#app')
 app.component('Dropdown', Dropdown);
+app.component('Toast', Toast);
+app.use(store).use(router).use(PrimeVue).use(ToastService).mount('#app')

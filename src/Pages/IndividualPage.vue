@@ -1,5 +1,6 @@
 <template>
 	<div class="min-h-screen pt-16 bg-red-200">
+		<Toast />
 		<div class="grid grid-cols-2">
 			<div>
 				{{project.id}}
@@ -52,8 +53,7 @@ export default defineComponent({
 
 		const url = await this.getURL().catch(err=> console.error("A caught error: ", err));
 		if(!url){
-			//TODO HANDLE URL EMPTY
-			console.error("url is empty")
+			this.$toast.add({severity:'error', summary: 'File not accessable', detail:'Cannot access the file at the moment', life: 5000})
 			return
 		}
 		console.log("this.url set to", url)
@@ -61,8 +61,7 @@ export default defineComponent({
 	},
 	methods: {
 		async getURL(): Promise<(string)>{
-			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${this.project.filePath}` //`http://localhost:5001/cb-tok-exhibition/us-central1/ftp/get/${this.project.filePath}`
-			
+			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${this.project.filePath}`
 			const request = await fetch(url, {
 				method: 'GET',
 				mode: 'cors'

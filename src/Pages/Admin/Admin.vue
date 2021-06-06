@@ -1,23 +1,29 @@
 //TODO This
 <template>
-    <div class="flex flex-row">
-        <div class="w-2/5 float-left mt-16 p-10 bg-gray-300" style="height:120vh">
-            <h1 class="text-3xl font-bold mb-5">Years</h1>
+    <transition name="fade" mode="out-in">
+    <div class="flex flex-row" v-if="userChecked">
+        <div class="w-2/5 float-left mt-16 p-10 bg-gray-300 flex flex-col" style="height:120vh">
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold mb-5">Years</h1>
 
-            <transition name="fade" mode="out-in">
-            <div v-if="yearsLoaded">
-                <div v-for="year in years" :key="year.year" class="bg-red-200 p-4 rounded-xl">
-                    <h1>Classes</h1>
-                    <ul>
-                        <li v-for="(classInstance, i) in year.classes" :key="i">{{classInstance}}</li>
-                    </ul>
-                    <h1 class="text-xl font-semibold">{{year.year}}</h1>
+                <transition name="fade" mode="out-in">
+                <div v-if="yearsLoaded">
+                    <div v-for="year in years" :key="year.year" class="bg-red-200 p-4 rounded-xl">
+                        <h1>Classes</h1>
+                        <ul>
+                            <li v-for="(classInstance, i) in year.classes" :key="i">{{classInstance}}</li>
+                        </ul>
+                        <h1 class="text-xl font-semibold">{{year.year}}</h1>
+                    </div>
                 </div>
+                <div v-else>
+                    LOADING...
+                </div>
+                </transition>
             </div>
-            <div v-else>
-                LOADING...
+            <div>
+                <button class="bg-white border-2 p-4 rounded-lg" @click="signOut">Sign Out</button>
             </div>
-            </transition>
         </div>
         <div class="w-3/5 float-right sticky top-0 p-20 flex flex-col gap-y-10 h-screen text-3xl font-bold text-center text-white select-none">
             <router-link to="/adminNewClass" class="flex-1">
@@ -34,21 +40,37 @@
             </router-link>
         </div>
     </div>
+    <div v-else class="h-screen"></div>
+    </transition>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {db} from '@/firebase'
 import {yearContainer} from '@/types/projects'
-
+import {auth} from '@/firebase'
+import checkAdminMixin from '@/mixins/checkAdmin'
 
 export default defineComponent({
     name:"Admin",
+    mixins:[checkAdminMixin],
     data(){
         return{
+            userChecked:false,
             years:[] as yearContainer[],
             yearsLoaded: false
         }
+    },
+    beforeCreate(){
+        auth.onAuthStateChanged(async (user)=>{
+			//logged in
+			if (user && user != null && user.email) {
+                if(!await this.isAdmin(user.email)) this.$router.push("/adminCheck")
+                this.userChecked = true
+            }
+			//not logged in
+			else this.$router.push('/adminCheck')
+		})
     },
     async created(){
         const querySnapshot = await db.collection("years").get()
@@ -57,6 +79,13 @@ export default defineComponent({
             ...stuff.data() as {classes:string[]}
         }))
         this.yearsLoaded = true
-    }
+    },
+    methods: {
+        signOut(e: Event){
+			e.preventDefault();
+			auth.signOut();
+			this.$router.push('/adminCheck')
+		},
+    },
 })
 </script>

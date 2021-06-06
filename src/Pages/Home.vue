@@ -7,10 +7,10 @@
                 <router-link to="/search" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring mb-4 lg:mb-0"> 
                     SEARCH
                 </router-link>
-                <router-link to="/upload" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring"> 
+                <router-link to="/upload" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring mb-4 lg:mb-0"> 
                     POST
                 </router-link>
-                <router-link to="/discover" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring"> 
+                <router-link to="/discover" class="py-2 px-10 rounded-full border-grey-200 bg-white text-black border-4 text-2xl font-bold noOutline focus:ring mb-4 lg:mb-0"> 
                     DISCOVER
                 </router-link>
             </div>

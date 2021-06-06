@@ -1,5 +1,6 @@
 <template>
     <div class="pt-16 px-10 min-h-screen">
+        <Toast />
         <h1 class="text-4xl mb-6 font-bold">Create New Year</h1>
 
         <h2 class="text-2xl font-semibold mb-2">Years</h2>
@@ -94,10 +95,10 @@ export default defineComponent({
         submit(){
             if(this.classErrorMessage) return
             if(this.classes.length <= 0){
-                //TODO UI FOR THIS
-                console.error("Not enough classes");
+                this.$toast.add({severity:"error", summary:"Make at least one class", life:5000})
                 return
             }
+            console.log("submit")
             db.collection("years").doc(this.yearStart.toString()+"-"+this.yearEnd.toString()).set({
                 classes: this.classes
             })

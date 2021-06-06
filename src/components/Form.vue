@@ -1,5 +1,8 @@
 <template>
     <div class="min-h-screen grid grid-cols-5" key="form">
+		<!-- POPUPS -->
+		<Toast/>
+
 		<div class="col-span-5 lg:col-span-3 pt-16 mx-4 lg:mx-10">
 			<h1 class="text-4xl font-bold mb-6">Upload Page</h1>
 			<div class="flex flex-row flex-wrap border-2 rounded-lg p-4 mb-10 gap-x-5 gap-y-3">
@@ -63,6 +66,7 @@ import okboomer from '@/types/okbm'
 
 import {User} from '@firebase/auth-types'
 
+
 export default defineComponent({
     name:"Form",
     props:{
@@ -121,7 +125,6 @@ export default defineComponent({
 		}
     },
 	mounted(){
-		console.log('loaded')
 		const dropArea = document.getElementById('dropArea')
 		if(!dropArea){console.error("dropArea not found");return;}
 
@@ -175,8 +178,7 @@ export default defineComponent({
 			//check if all needed elements are here
 			const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
 			if(!this.formReadyM() || !fileInput?.files){
-				//TODO USER UI THING
-				console.error("Form Incomplete")
+				this.$toast.add({severity:'error', summary: 'Form Not Complete', detail:'Complete form to submit', life: 5000});
 				return;
 			}
 
@@ -234,12 +236,10 @@ export default defineComponent({
 			const files = dt.files
 
 			if(files.length > 1){
-				//TODO Add some UI thing to help with this
-				console.error("ONLY DROP ONE AT A TIME")
+				this.$toast.add({severity:'error', summary: 'Too Many Files', detail:'Only Drop 1 file at a time', life: 5000});
 				return;
 			}else if(files[0].type != "application/pdf"){
-				//TODO Add some UI thing to help with this
-				console.error("PDF ONLY");
+				this.$toast.add({severity:'error', summary: 'Only Submit PDFs', detail:'Don\'t submit anything other than PDFs', life: 5000});
 				return;
 			}
 			const file = files[0]
