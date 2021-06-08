@@ -1,3 +1,4 @@
+/* #region  FTP*/
 // EXPRESS
 import * as express from "express";
 import { Request, Response, NextFunction } from 'express'
@@ -14,19 +15,9 @@ import writeFiles from './writeFiles'
 import path = require('path');
 app.get("/get/:fileName", runAsync(getFiles))
 app.post("/write", runAsync(writeFiles));
-app.get("/getControl", (req, res) =>{
-	res.sendFile(path.join(__dirname,'../test.pdf'))
+app.get("/getControl", (req, res) => {
+	res.sendFile(path.join(__dirname, '../test.pdf'))
 })
-
-
-// Start writing Firebase Functions
-// https://firebase.google.com/docs/functions/typescript
-import * as functions from "firebase-functions";
-exports.helloWorld = functions.https.onRequest((request, response) => {
-	functions.logger.info("Hello logs!", { structuredData: true });
-	response.send("Hello from Firebase!");
-});
-export const ftp = functions.https.onRequest(app);
 
 /* #region  HELPER */
 type appAction = (arg0: Request, arg1: Response, arg2: NextFunction) => Promise<void>;
@@ -36,3 +27,36 @@ function runAsync(callback: appAction) {
 	}
 }
 /* #endregion */
+/* #endregion */
+/* #endregion */
+
+// Start writing Firebase Functions
+// https://firebase.google.com/docs/functions/typescript
+//FUNCTIONS JARGON
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+admin.initializeApp();
+export const db = admin.firestore();
+
+//HELLO WORLD TEST
+export const helloWorld = functions.https.onRequest((request, response) => {
+	functions.logger.info("Hello logs!", { structuredData: true });
+	response.send("Hello from Firebase!");
+});
+
+
+//GET FEATURED PROJECTS
+import getFeatured from './getFeatured'
+export const job = functions.pubsub.schedule("0 */4 * * *").onRun(()=>{
+	db.collection('meta').doc('featureProjects').update({
+		projects: getFeatured()
+	});
+})
+
+export const penis = functions.https.onRequest(async (request, response)=> {
+	response.send(await getFeatured())
+})
+
+
+//FTP STUFF
+export const ftp = functions.https.onRequest(app);

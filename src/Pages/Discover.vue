@@ -38,6 +38,7 @@ export default defineComponent({
         }
     },
     async created(){
+        //TODO GET the project
         const doc = await db.collection("projects").doc("HNDmVOMewacwJ8r6IVBj").get()
         this.doc = doc.data() as project
     },
