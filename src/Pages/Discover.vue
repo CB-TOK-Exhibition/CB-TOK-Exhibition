@@ -1,10 +1,11 @@
 <template>
 	<div class="min-h-screen flex flex-col p-16">
 		<h1 class="text-6xl font-black mb-4">Discover</h1>
-		<div class="flex flex-row text-xs gap-x-2 gap-y-2 flex-wrap">
-			<div id="podsList" v-for="(topic, i) in topicsList" :key="i">
+		<div id="podsList" class="flex flex-row text-xs gap-x-2 gap-y-4 flex-wrap">
+			<!-- TODO MAKE FILTER WORK -->
+			<div v-for="(topic, i) in topicsList" :key="i">
 				<input type="radio" class="hidden" name="name" :id="i">
-				<label  class="bg-gray-100 p-1 px-2 rounded-full border-2"  :for="i">
+				<label class="bg-gray-100 p-1 px-2 rounded-full border-2 cursor-pointer select-none" :for="i">
 					{{topic}}
 				</label>
 			</div>
