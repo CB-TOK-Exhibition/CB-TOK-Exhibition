@@ -20,7 +20,8 @@
                 <Pods :topics="doc.topics" :center="false"></Pods>
             </div>
             <div v-else class="flex-1">
-                LOADING
+                <!-- <Loading :is-full-page="false" :active="true"></Loading> -->
+                <PulseLoader></PulseLoader>
             </div>
 
 
@@ -34,10 +35,11 @@ import {defineComponent} from 'vue'
 import project, {topicsList} from '@/types/projects'
 import {db} from '@/firebase'
 import Pods from '@/components/Pods.vue'
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 export default defineComponent({
     name:'Discover',
-    components:{Pods},
+    components:{Pods, PulseLoader},
     data() {
         return {
             topicsList,
@@ -66,16 +68,14 @@ export default defineComponent({
             this.getProject()
         },
         async getProject(){
-            console.log("get project")
             this.loading = true
 
             const projectId = this.ids[this.id]
             const projectSnapshot = await db.collection("projects").doc(projectId).get()
             const projectData = projectSnapshot.data() as project
-            console.log(projectData)
             this.doc = projectData
 
-            this.loading = false
+            // this.loading = false
         }
     }
 })
