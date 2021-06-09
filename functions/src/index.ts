@@ -47,9 +47,9 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 
 //GET FEATURED PROJECTS
 import getFeatured from './getFeatured'
-export const job = functions.pubsub.schedule("0 */4 * * *").onRun(()=>{
+export const job = functions.pubsub.schedule("0 */4 * * *").onRun(async ()=>{
 	db.collection('meta').doc('featureProjects').update({
-		projects: getFeatured()
+		projects: await getFeatured()
 	});
 })
 

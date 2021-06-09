@@ -8,7 +8,9 @@
         </div>
         <div class="flex-1 flex flex-row items-center p-4 gap-x-4">
             <svg class="w-6 h-6 arrows" @click="lastProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
-            <div class="flex-1 bg-red-200 h-full">
+            
+            <!-- PROJECT BULK -->
+            <div class="flex-1 bg-red-200 h-full" v-if="!loading">
                 <img :src="doc.imageFeature" alt="">
                 <h1>{{doc.projectTitle}}</h1>
                 <div class="flex flex-row mt-3">
@@ -17,6 +19,11 @@
                 </div>
                 <Pods :topics="doc.topics" :center="false"></Pods>
             </div>
+            <div v-else class="flex-1">
+                LOADING
+            </div>
+
+
             <svg class="w-6 h-6 arrows" @click="nextProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
         </div>
     </div>
@@ -34,20 +41,41 @@ export default defineComponent({
     data() {
         return {
             topicsList,
-            doc:{} as project
+            doc:{} as project,
+            loading: true,
+
+            ids: [] as string[],
+            id: 0,
         }
     },
     async created(){
         //TODO GET the project
-        const doc = await db.collection("projects").doc("HNDmVOMewacwJ8r6IVBj").get()
-        this.doc = doc.data() as project
+        const doc = await db.collection("meta").doc("featureProjects").get()
+        this.ids = (doc.data() as {projects: string[]}).projects
+        await this.getProject()
     },
     methods:{
         lastProject(){
-            console.log("go to last project")
+            this.id -= 1
+            if(this.id < 0) this.id = this.ids.length - 1
+            this.getProject()
         },
         nextProject(){
-            console.log("go to next project")
+            this.id += 1
+            if (this.id >= this.ids.length) this.id = 0
+            this.getProject()
+        },
+        async getProject(){
+            console.log("get project")
+            this.loading = true
+
+            const projectId = this.ids[this.id]
+            const projectSnapshot = await db.collection("projects").doc(projectId).get()
+            const projectData = projectSnapshot.data() as project
+            console.log(projectData)
+            this.doc = projectData
+
+            this.loading = false
         }
     }
 })
