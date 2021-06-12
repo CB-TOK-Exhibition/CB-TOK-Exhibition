@@ -74,7 +74,6 @@ export default defineComponent({
 	methods: {
 		async getURL(): Promise<(string)>{
 			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${this.project.id}.pdf`
-			console.log(url)
 			const request = await fetch(url, {
 				method: 'GET',
 				mode: 'cors'
