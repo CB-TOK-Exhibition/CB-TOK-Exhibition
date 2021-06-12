@@ -26,7 +26,6 @@ npm run build
 
 ## Oscar
 - search page banner
-- Footer changes
 
 ## Edwin
 - Discover page project tile

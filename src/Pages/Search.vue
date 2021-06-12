@@ -22,13 +22,13 @@
 
 			<transition name="fade" mode="out-in">
 			<div id="searchResults" v-if="projectsLoaded && projectList.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
-				<div v-for="(project, i) in projectList" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl" :key="i">
-					<router-link :to="`/${project.id}`">
+				<div v-for="(project, i) in projectList" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
-						<img :src="project.imageFeature" class="w-full"/>
+						<img :src="project.imageFeature" class="w-full" id="itemPhoto"/>
 
 						<!-- BOTTOM BITS -->
-						<div class="p-4">
+						<div class="p-4 flex-1 flex flex-col justify-around">
 							<p class="font-bold text-3xl mt-4 text-center">{{project.projectTitle}}</p>
 							<!-- TAG LIST -->
 							<Pods :topics="project.topics"></Pods>
@@ -156,4 +156,8 @@ export default defineComponent({
 		}
 	}
 
+#itemPhoto{
+	height: 19rem;
+	object-fit: cover;
+}
 </style>
