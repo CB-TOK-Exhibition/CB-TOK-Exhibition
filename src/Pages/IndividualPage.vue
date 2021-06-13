@@ -58,8 +58,8 @@ export default defineComponent({
 		const first = document.createElement('div');
 		first.classList.add("penis")
 		first.style.backgroundImage = `url('${this.project.imageFeature}')`
-		const main = (document.getElementById("main") as HTMLDivElement)
-		main.insertBefore(first, main.childNodes[0])
+		const main = document.getElementById("main")
+		if(main) main.insertBefore(first, main.childNodes[0])
 
 		// .style.backgroundImage = `url('${this.project.imageFeature}')
 
