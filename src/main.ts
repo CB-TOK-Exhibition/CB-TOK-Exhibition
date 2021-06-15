@@ -6,6 +6,9 @@ import store from './store'
 import PrimeVue from 'primevue/config'
 import Dropdown from 'primevue/dropdown';
 
+// ALGOLIA INSTANT SEARCH
+import AlgoliaComponents from 'vue-instantsearch';
+
 //THIS CSS FILE IS FOR TAILWIND
 import '@/CSS/tailwind.css'
 import '@/CSS/static.css'
@@ -22,4 +25,4 @@ import ToastService from 'primevue/toastservice';
 const app = createApp(App)
 app.component('Dropdown', Dropdown);
 app.component('Toast', Toast);
-app.use(store).use(router).use(PrimeVue).use(ToastService).mount('#app')
+app.use(store).use(router).use(PrimeVue).use(ToastService).use(AlgoliaComponents).mount('#app')

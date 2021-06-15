@@ -51,3 +51,29 @@ export const fourHourSetFeature = functions.pubsub.schedule("0 */4 * * *").onRun
 
 //FTP STUFF
 export const ftp = functions.https.onRequest(app);
+
+// UPDATING ALGOLIA INDEX (USED FOR SEARCH)
+import algoliasearch from "algoliasearch";
+const APP_ID = "71DQO3F2KO"
+const ADMIN_KEY = "2027099cd83ca8f71e2e5e25cc2a979b"
+
+const client = algoliasearch(APP_ID, ADMIN_KEY)
+const index = client.initIndex("projects")
+
+export const addToIndex = functions.firestore.document("projects/{projectId}")
+	.onCreate(snapshot => {
+		const data = snapshot.data()
+		const objectID = snapshot.id
+
+		return index.saveObject({...data, objectID})
+	})
+
+export const updateIndex = functions.firestore.document("projects/{projectId}")
+	.onUpdate((change) => {
+		const newData = change.after.data()
+		const objectID = change.after.id
+		return index.saveObject({ ...newData, objectID})
+	})
+
+export const deleteFromIndex = functions.firestore.document("projects/{projectId}")
+	.onDelete(snapshot => index.deleteObject(snapshot.id))

@@ -16,7 +16,7 @@
 				</div>
 			</div>
 			<form @submit="submit">
-				<label for="title" class="text-2xl font-bold mb-2 mt-6">Title</label>
+				<label for="title" class="text-2xl font-bold mb-2 mt-6">Title / Prompt</label>
 				<input type="text" name="title" id="title" class="block border-2 w-full p-2 focus:ring noOutline rounded-lg" v-model="title">
 
 				<input type="file" class="hidden" name="fileInput" id="fileInput" accept="application/pdf">
@@ -32,7 +32,7 @@
 				<h1 class="text-2xl font-bold mb-2 mt-6">Select Your Class</h1>
 				<Dropdown v-model="selectedClass" :options="classes" optionLabel="name" placeholder="Select a Class" />
 
-				<h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics {{checkedCount}}/3</h1>
+				<h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics (Pick at least 1)</h1>
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-6 md:grid-rows-3 lg:grid-rows-2 gap-3" :class="{'done': checkedCount==3}">
 					<!-- topic repeater -->
 					<div v-for="(topic, i) in topics" :key="i">
@@ -147,7 +147,7 @@ export default defineComponent({
     computed:{
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		formReady(vm:any){
-			return (!!vm.title) && (vm.uploaded) && (vm.checkedTopics.length == 3) && (vm.selectedClass);
+			return (!!vm.title) && (vm.uploaded) && (vm.checkedTopics.length >= 1) && (vm.selectedClass);
 		},
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		checkedCount(vm:any){
@@ -161,7 +161,7 @@ export default defineComponent({
 			this.$router.push('/uploadInstructions')
 		},
         limit(e:Event){
-			const limit = 3
+			const limit = 7
 			const target = e.target as HTMLInputElement;
 			if(!target) return
 
@@ -268,7 +268,7 @@ export default defineComponent({
 			return [...Array(size).keys()].map(i => i + startAt);
 		},
 		formReadyM(){
-			return (!!this.title) && (this.uploaded) && (this.checkedTopics.length == 3) && (!!this.selectedClass);
+			return (!!this.title) && (this.uploaded) && (this.checkedTopics.length >=1) && (!!this.selectedClass);
 		},
     }
 })

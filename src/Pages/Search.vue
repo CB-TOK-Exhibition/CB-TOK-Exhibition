@@ -1,4 +1,5 @@
 <template>
+
 	<div class="min-h-screen w-full">
 		<div class="h-72 w-full bg-blue-300 flex flex-col justify-end pl-6 pb-12 lg:pl-32 lg:pb-20" id="searchBanner">
 			<p>
@@ -9,11 +10,13 @@
 
 
 		<div class="w-full px-4 lg:px-32">
+
+
 			<div id="searchBar" class="w-full">
 				<input
 				type="search"
 				class="border-4 border-gray-300 w-full p-4 rounded-xl noOutline focus:ring text-xl hover:shadow-lg"
-				name="search" id="search" v-model.lazy="search" @change="searchChange">
+				name="search" id="search" v-model="search" v-on:input="searchChange">
 			</div>
 			<div class="flex flex-row mt-4 gap-x-4">
 				<Dropdown @change="changeYear" v-model="filterYear" :options="years" optionLabel="name" placeholder="Filter Year..."/>
@@ -21,8 +24,8 @@
 			</div>
 
 			<transition name="fade" mode="out-in">
-			<div id="searchResults" v-if="projectsLoaded && projectList.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
-				<div v-for="(project, i) in projectList" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
+				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
 						<img :src="project.imageFeature" class="w-full" id="itemPhoto"/>
@@ -48,6 +51,7 @@
 			</transition>
 		</div>
 	</div>
+
 </template>
 
 <script lang="ts">
@@ -56,6 +60,9 @@ import project from '@/types/projects'
 import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
+import algoliasearch from 'algoliasearch/lite';
+
+
 
 export default defineComponent({
 	name:'Search',
@@ -64,6 +71,7 @@ export default defineComponent({
 		return {
 			//FOR DISPLAY THINGS
 			projectList:[] as project[],
+			projectsShown:[] as project[],
 			projectsLoaded: false,
 
 
@@ -85,6 +93,7 @@ export default defineComponent({
 			filterClass:{} as okboomer,
 			classes:[] as okboomer[],
 			classFilterLoading: false,
+			searchClient: algoliasearch("71DQO3F2KO", "2027099cd83ca8f71e2e5e25cc2a979b")
 		}
 	},
 	created(){
@@ -136,10 +145,26 @@ export default defineComponent({
 			this.projectList = out
 			
 			this.projectsLoaded = true;
+			this.projectsShown = out;
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
 			console.log("search invoke")
+			var projectsToBeShown = []
+			for (var i = 0; i < this.projectList.length; i++) {
+				try {
+					var currentTitle = this.projectList[i].projectTitle
+					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) {
+						projectsToBeShown.push(this.projectList[i])
+					}
+				}
+				catch {
+					console.log('yes')
+				}
+				
+			}
+			this.projectsShown = projectsToBeShown
+
 		},
 	}
 })
