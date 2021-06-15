@@ -19,4 +19,17 @@ npm run build
 ```
 
 # MASTER TO DO
-- Gets some better transition animations
+- Mobile Compatible
+
+## Vansh
+- search bar functionality
+
+## Oscar
+- search page banner
+
+## Edwin
+- Discover page project tile
+    - Amro get the design
+
+## Far Future
+- Discover page filters

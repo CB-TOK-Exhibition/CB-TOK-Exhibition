@@ -54,6 +54,14 @@ const routes: Array<RouteRecordRaw> = [
 		}
 	},
 	{
+		path: '/uploadCheck',
+		name: 'Upload Check',
+		component: () => import(/* webpackChunkName: "uploadInstructions" */'@/Pages/Upload/UploadCheck.vue'),
+		meta: {
+			title: "Upload Check"
+		}
+	},
+	{
 		path: '/adminNewYear',
 		name: 'AdminNewYear',
 		component: () => import(/* webpackChunkName "adminNewYear" */'@/Pages/Admin/AdminNewYear.vue'),

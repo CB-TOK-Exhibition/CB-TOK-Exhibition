@@ -18,3 +18,29 @@
 .slide-leave-to {
     transform: translateY(-100%);
 }
+
+
+/* SLIDE X */
+.slideX-enter-active,
+.slideX-leave-active {
+    transition: transform 0.2s ease, opacity .3s ease;
+}
+
+.slideX-enter-from,
+.slideX-leave-to {
+    opacity: 0;
+}
+
+.slideX-enter-from {
+    transform: translateX(60%);
+}
+
+.slideX-leave-to {
+    transform: translateX(-60%);
+}
+
+.slideX-enter-to,
+.slideX-leave-from {
+    transform: translateX(0);
+    opacity: 1;
+}

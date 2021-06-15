@@ -39,7 +39,7 @@
 						<input type="checkbox" class="hidden topicTag" v-on:change="limit" :name="topic.tag" :id="topic.tag" :value="topic.name" v-model="checkedTopics">
 
 						<!-- topic box -->
-						<label :for="topic.tag" class="labelCheck grid border-2 rounded-xl place-items-center px-4 py-6 h-full">
+						<label :for="topic.tag" class="labelCheck grid border-2 rounded-xl place-items-center px-4 py-6 h-full select-none">
 							<h1 class="font-medium text-md text-center">
 								{{topic.name}}
 							</h1>
@@ -51,7 +51,7 @@
 			</form>
 		</div>
 		<div class="col-span-2 hidden lg:block">
-			<img class="h-full max-h-screen w-full object-cover" src="https://i.pinimg.com/originals/a3/9b/46/a39b46106646c596800621b698abae73.jpg" alt="Image">
+			<img class="h-full w-full object-cover" src="https://www.lplegal.com/dam/jcr:c45130cc-0dbc-4c58-98e6-a73fec1306cd/iStock-979449394-3.jpg" alt="Image">
 		</div>
 	</div>
 </template>
