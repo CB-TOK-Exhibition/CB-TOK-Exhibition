@@ -60,8 +60,6 @@ import project from '@/types/projects'
 import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
-import algoliasearch from 'algoliasearch/lite';
-
 
 
 export default defineComponent({
@@ -93,7 +91,6 @@ export default defineComponent({
 			filterClass:{} as okboomer,
 			classes:[] as okboomer[],
 			classFilterLoading: false,
-			searchClient: algoliasearch("71DQO3F2KO", "2027099cd83ca8f71e2e5e25cc2a979b")
 		}
 	},
 	created(){
