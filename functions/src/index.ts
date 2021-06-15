@@ -8,8 +8,6 @@ app.use(cors({ origin: true }));
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-
-/* #region  READING FILES */
 import getFiles from './getFiles'
 import writeFiles from './writeFiles'
 import path = require('path');
@@ -19,15 +17,12 @@ app.get("/getControl", (req, res) => {
 	res.sendFile(path.join(__dirname, '../test.pdf'))
 })
 
-/* #region  HELPER */
 type appAction = (arg0: Request, arg1: Response, arg2: NextFunction) => Promise<void>;
 function runAsync(callback: appAction) {
 	return (req: Request, res: Response, next: NextFunction) => {
 		callback(req, res, next).catch(next)
 	}
 }
-/* #endregion */
-/* #endregion */
 /* #endregion */
 
 // Start writing Firebase Functions
@@ -47,14 +42,10 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 
 //GET FEATURED PROJECTS
 import getFeatured from './getFeatured'
-export const job = functions.pubsub.schedule("0 */4 * * *").onRun(async ()=>{
+export const fourHourSetFeature = functions.pubsub.schedule("0 */4 * * *").onRun(async ()=>{
 	db.collection('meta').doc('featureProjects').update({
 		projects: await getFeatured()
 	});
-})
-
-export const penis = functions.https.onRequest(async (request, response)=> {
-	response.send(await getFeatured())
 })
 
 
