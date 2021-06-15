@@ -12,6 +12,7 @@
     "@firebase/auth-types": "^0.10.3",
     "@octokit/core": "^3.4.0",
     "@tailwindcss/postcss7-compat": "^2.0.2",
+    "algoliasearch": "^4.9.2",
     "autoprefixer": "^9",
     "core-js": "^3.14.0",
     "firebase": "^8.6.5",
