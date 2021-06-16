@@ -19,8 +19,9 @@
 				<label for="title" class="text-2xl font-bold mb-2 mt-6">Title / Prompt</label>
 				<input type="text" name="title" id="title" class="block border-2 w-full p-2 focus:ring noOutline rounded-lg" v-model="title">
 
+				<!-- PDF -->
 				<input type="file" class="hidden" name="fileInput" id="fileInput" accept="application/pdf">
-				<label for="fileInput" id="dropArea" class="h-24 w-full mt-6 border-2 inline-grid place-items-center cursor-pointer" @drag="console.log('drag')" @drop="dropHandle">
+				<label for="fileInput" id="dropArea" class="h-24 w-full mt-6 border-2 inline-grid place-items-center cursor-pointer" @drop="dropHandle">
 					<p class="inline-block">
 						Click or Drop Files Here...
 					</p>
@@ -29,11 +30,24 @@
 					</p>
 				</label>
 
+
+				<!-- THUMBNAIL -->
+				<h1  class="text-2xl font-bold mt-6">Add Thumbnail</h1>
+				<input type="file" class="hidden" name="imageInput" id="imageInput" accept="image/*">
+				<label for="imageInput" id="dropImageArea" class="h-24 w-full border-2 inline-grid place-items-center cursor-pointer" @drop="dropImageHandle">
+					<p class="inline-block">
+						Click or Drop Thumbnail Here...
+					</p>
+					<p class="inline-block">
+						{{imageFileName}}
+					</p>
+				</label>
+
 				<h1 class="text-2xl font-bold mb-2 mt-6">Select Your Class</h1>
 				<Dropdown v-model="selectedClass" :options="classes" optionLabel="name" placeholder="Select a Class" />
 
 				<h1 class="text-2xl font-bold mb-2 mt-6">Select Your Topics (Pick at least 1)</h1>
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-6 md:grid-rows-3 lg:grid-rows-2 gap-3" :class="{'done': checkedCount==3}">
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 grid-rows-6 md:grid-rows-3 lg:grid-rows-2 gap-3">
 					<!-- topic repeater -->
 					<div v-for="(topic, i) in topics" :key="i">
 						<input type="checkbox" class="hidden topicTag" v-on:change="limit" :name="topic.tag" :id="topic.tag" :value="topic.name" v-model="checkedTopics">
@@ -77,9 +91,23 @@ export default defineComponent({
     },
     data() {
         return {
-            title:'',
+			title:'',
+
+			// FILE AND RELATED
 			uploaded:false,
 			fileName:'',
+			githubUploaded: false,
+
+			imageUploaded:false,
+			imageFileName:'',
+			githubImageUploaded: false,
+			
+			//CLASS SELECT
+			selectedClass:{} as okboomer,
+			classes:[] as okboomer[],
+			
+			//TOPICS
+			limitCount: 7,
 			topics:[
 				{
 					name:"Knowledge and the Knower",
@@ -107,8 +135,6 @@ export default defineComponent({
 				},
 			],
 			checkedTopics:[] as string[],
-			selectedClass:{} as okboomer,
-			classes:[] as okboomer[],
         }
     },
     async created(){
@@ -125,16 +151,32 @@ export default defineComponent({
 		}
     },
 	mounted(){
+		// === ADD EVENT LISTENERS === 
+		//DEFINE AREAS
 		const dropArea = document.getElementById('dropArea')
 		if(!dropArea){console.error("dropArea not found");return;}
 
-		const preventDefaults = (e: Event) => {e.preventDefault();e.stopPropagation()}
-		const highlight = ()=>{dropArea.classList.add('highlight')}
-		const unhighlight = ()=> {dropArea.classList.remove('highlight')}
+		const imageDropArea = document.getElementById("dropImageArea")
+		if(!imageDropArea){console.error("dropImageArea not found");return;}
 
-		['dragenter', 'dragleave', 'drop', 'dragover'].forEach(eventName => dropArea.addEventListener(eventName, preventDefaults, false));
-		['dragenter'].forEach(eventName => dropArea.addEventListener(eventName, highlight, false));
-		['dragleave', 'drop'].forEach(eventName => dropArea.addEventListener(eventName, unhighlight, false));
+		//HELPFUL FUNCTIONS
+		const preventDefaults = (e: Event) => {e.preventDefault();e.stopPropagation()}
+		['dragenter', 'dragleave', 'drop', 'dragover'].forEach(eventName =>{
+			dropArea.addEventListener(eventName, preventDefaults, false)
+			imageDropArea.addEventListener(eventName, preventDefaults, false)
+		});
+
+		const highlight = (element: HTMLElement)=>{element.classList.add('highlight')}
+		['dragenter'].forEach(eventName => {
+			dropArea.addEventListener(eventName, ()=>{highlight(dropArea)}, false)
+			imageDropArea.addEventListener(eventName, ()=>{highlight(imageDropArea)}, false)
+		});
+
+		const unhighlight = (element: HTMLElement)=> {element.classList.remove('highlight')}
+		['dragleave', 'drop'].forEach(eventName => {
+			dropArea.addEventListener(eventName, ()=>{unhighlight(dropArea)}, false)
+			imageDropArea.addEventListener(eventName, ()=>{unhighlight(imageDropArea)}, false)
+		});
 
 		//EVENT LISTENER FOR THE INPUT ELEMENTS
 		(document.getElementById("fileInput") as HTMLInputElement).addEventListener("input", (e) =>{
@@ -161,11 +203,10 @@ export default defineComponent({
 			this.$router.push('/uploadInstructions')
 		},
         limit(e:Event){
-			const limit = 7
 			const target = e.target as HTMLInputElement;
 			if(!target) return
 
-			if(this.checkedTopics.length > limit){
+			if(this.checkedTopics.length > this.limitCount){
 				target.checked = false
 				this.removeItem(this.checkedTopics, target.value);
 				return
@@ -176,64 +217,87 @@ export default defineComponent({
 			console.log("Submit Start")
 
 			//check if all needed elements are here
-			const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
-			if(!this.formReadyM() || !fileInput?.files){
+			const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+			const imageInput = document.getElementById('imageInput') as HTMLInputElement
+			if(!this.formReadyM() || !fileInput?.files || !imageInput?.files){
 				this.$toast.add({severity:'error', summary: 'Form Not Complete', detail:'Complete form to submit', life: 5000});
 				return;
 			}
 
-
-			//upload to GITHUB
-			const octokit = new Octokit({ auth: process.env.VUE_APP_ACCESS_CODE });
-
-			const fileReader = new FileReader();
-			console.log(fileInput.files[0])
-			fileReader.readAsDataURL(fileInput.files[0]);
-			fileReader.onload = async (event) => {
-				if(!event.target?.result){console.error("Encoding Error");return;}
-				console.log(await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
-					owner: 'CB-TOK-Exhibition',
-					repo: 'databasePDFs',
-					path: this.fileName,
-					message: `[API] Uploading file for ${this.currentUser.displayName}`,
-					content: (event.target.result as string).substring(28, (event.target.result as string).length),
-				}).catch(err=>{
-					console.error(err);
-					return;
-				}))
-			};
-			
-			//upload to database
-			await db.collection("publishedUsers").doc().set({
-				email: this.currentUser.email
-			})
-
-			await db.collection("projects").doc().set({
+			//upload to projects database
+			const fun = await db.collection("projects").add({
 					class: this.selectedClass.name as string,
 					year: this.getSchoolYear(),
-					
+
+					//eslint-disable-next-line
+					author: auth.currentUser!.email,
 					projectTitle: this.title,
-					filePath: this.fileName,
-					//TODO FIGURE THIS OUT
-					imageFeature: "image.jpg",
+					imageExtension: this.imageFileName.split(".")[1],
 					rating: 0,
 					topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
 				} as project
 			)
 
-			this.$router.push("/uploadCheck")
+			//upload to GITHUB
+			const octokit = new Octokit({ auth: process.env.VUE_APP_ACCESS_CODE });
+			let year = ""
+			const dateMachine = new Date();
+			const yearNum = dateMachine.getFullYear();
+			const month = dateMachine.getMonth();
+			if(month < 9) year = (yearNum - 1).toString() + "-" + yearNum.toString()
+			else if (month >= 9) year = yearNum.toString() + "-" + (yearNum + 1).toString()
 
-			//OR UPLOAD TO FTP
-			// fetch('http://localhost:5001/cb-tok-exhibition/us-central1/ftp/write', {
-			//     method: 'POST',
-			//     mode: 'cors',
-			//     body: fileInput.files[0]
-			// })
+			const selectedClass = this.selectedClass.name
+
+			//upload pdf
+			const fileReader = new FileReader();
+			console.log("File to Upload", fileInput.files[0])
+			fileReader.readAsDataURL(fileInput.files[0]);
+			fileReader.onload = async (event) => {
+				if(!event.target?.result){console.error("[BACKEND/LOGIC] Encoding Error");return;}
+				const result = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+					owner: 'CB-TOK-Exhibition',
+					repo: 'databasePDFs',
+					path: `${year}/${selectedClass}/${fun.id}.pdf`,
+					message: `[API] Uploading file for ${this.currentUser.displayName}`,
+					content: (event.target.result as string).split(',')[1],
+				}).catch(err=>{
+					console.error("[Github_Upload_Error]", err);
+					return;
+				})
+				console.log(result)
+				this.githubUploaded = true
+				this.next()
+			};
+
+			//upload image
+			const imageReader = new FileReader();
+			console.log("Image to Upload", imageInput.files[0])
+			imageReader.readAsDataURL(imageInput.files[0]);
+			imageReader.onload = async (event) => {
+				if(!event.target?.result){console.error("[BACKEND/LOGIC] Encoding Error");return;}
+				console.log(event.target)
+				const result = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+					owner: 'CB-TOK-Exhibition',
+					repo: 'databasePDFs',
+					path: `${year}/${selectedClass}/${fun.id}.${this.imageFileName.split(".")[1]}`,
+					message: `[API] Uploading Image for ${this.currentUser.displayName}`,
+					content: (event.target.result as string).split(',')[1],
+				}).catch(err=>{
+					console.error("[Github_Upload_Error]", err);
+					return;
+				})
+				console.log(result)
+				this.githubImageUploaded = true
+				this.next()
+			};
+		},
+		next(){
+			if(this.githubUploaded && this.githubImageUploaded) this.$router.push("/uploadCheck")
 		},
         dropHandle(e: DragEvent){
-			const dt = e.dataTransfer
-			if(!dt){return;}
-			const files = dt.files
+			if(!e.dataTransfer){return}
+			const files = e.dataTransfer.files
 
 			if(files.length > 1){
 				this.$toast.add({severity:'error', summary: 'Too Many Files', detail:'Only Drop 1 file at a time', life: 5000});
@@ -246,6 +310,26 @@ export default defineComponent({
 			this.fileName = file.name;
 			this.uploaded = true;
 			const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
+			if(!fileInput){console.error("[BACKEND] INPUT DOES NOT EXIST");return}
+			fileInput.files = files
+		},
+		dropImageHandle(e: DragEvent){
+			if(!e.dataTransfer){return}
+			const files = e.dataTransfer.files
+			if(files.length > 1){
+				this.$toast.add({severity:'error', summary: 'Too Many Files', detail:'Only Drop 1 file at a time', life: 5000});
+				return;
+			}
+			//CHECK IMAGE TYPE
+			else if(files[0].type.split("/")[0] != "image"){
+				this.$toast.add({severity:'error', summary: 'Only Submit images', detail:'Don\'t submit anything other than images', life: 5000});
+				return;
+			}
+
+			const file = files[0]
+			this.imageFileName = file.name;
+			this.imageUploaded = true;
+			const fileInput = document.querySelector('#imageInput') as HTMLInputElement;
 			if(!fileInput){console.error("[BACKEND] INPUT DOES NOT EXIST");return}
 			fileInput.files = files
 		},
@@ -268,14 +352,14 @@ export default defineComponent({
 			return [...Array(size).keys()].map(i => i + startAt);
 		},
 		formReadyM(){
-			return (!!this.title) && (this.uploaded) && (this.checkedTopics.length >=1) && (!!this.selectedClass);
+			return (!!this.title) && (this.uploaded) && (this.imageUploaded) && (this.checkedTopics.length >=1) && (!!this.selectedClass);
 		},
     }
 })
 </script>
 
 <style lang="scss" scoped>
-	#dropArea {
+	#dropArea, #dropImageArea{
 		border: 2px dashed #ccc;
 		&.highlight {
 			border-color: purple;
@@ -291,6 +375,7 @@ export default defineComponent({
 		box-shadow: #00000036 0px 5px 14px;
 	}
 	.topicTag:checked{
+		// CHECKED
 		+ .labelCheck{
 			background-color: #BFDBFE;
 			border-color: #3B82F6;
@@ -306,6 +391,7 @@ export default defineComponent({
 		}
 	}
 
+	//once done disable
 	.done{
 		.labelCheck{
 			color:#d4d4d4;

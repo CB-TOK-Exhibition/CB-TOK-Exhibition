@@ -15,7 +15,7 @@
 
 
 		<div class="flex-1 flex flex-row items-center p-4 gap-x-6 overflow-x-hidden">
-			<svg class="w-6 h-6 arrows" @click="lastProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+			<svg class="w-6 h-6 arrows cursor-pointer" @click="lastProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
 			
 			<!-- PROJECT BULK -->
 			<transition tag="div" name="slideX" mode="out-in" @enter="enterImage">
@@ -46,7 +46,7 @@
 			
 
 
-			<svg class="w-6 h-6 arrows" @click="nextProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+			<svg class="w-6 h-6 arrows cursor-pointer" @click="nextProject" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
 		</div>
 	</div>
 </template>
@@ -57,9 +57,11 @@ import project, {topicsList} from '@/types/projects'
 import {db} from '@/firebase'
 import Pods from '@/components/Pods.vue'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+import getThumbnail from '@/mixins/getThumbnail'
 
 export default defineComponent({
 	name:'Discover',
+	mixins:[getThumbnail],
 	components:{Pods, PulseLoader},
 	data() {
 		return {
@@ -104,7 +106,7 @@ export default defineComponent({
 
 			//LOAD THE IMAGE
 			var img = new Image();
-			img.src = this.doc.imageFeature;
+			img.src = this.getThumbnailURL(this.doc);
 			img.onload = ()=>{
 				this.loading = false
 			};
@@ -112,7 +114,10 @@ export default defineComponent({
 		
 		//when a project element enters, set the image as the preloaded image
 		enterImage(){
-			if(!this.loading){(document.getElementById("mainImage") as HTMLImageElement).src = this.doc.imageFeature;}
+			if(!this.loading){
+				// eslint-disable-next-line 
+				(document.getElementById("mainImage") as HTMLImageElement).src = this.getThumbnailURL(this.doc);
+			}
 		}
 	}
 })

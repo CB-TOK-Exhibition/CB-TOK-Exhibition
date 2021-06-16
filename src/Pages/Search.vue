@@ -28,7 +28,7 @@
 				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
-						<img :src="project.imageFeature" class="w-full" id="itemPhoto"/>
+						<img :src="getThumbnailURL(project)" class="w-full" id="itemPhoto"/>
 
 						<!-- BOTTOM BITS -->
 						<div class="p-4 flex-1 flex flex-col justify-around">
@@ -60,11 +60,12 @@ import project from '@/types/projects'
 import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
-
+import getThumbnail from "@/mixins/getThumbnail"
 
 export default defineComponent({
 	name:'Search',
 	components:{Pods},
+	mixins:[getThumbnail],
 	data() {
 		return {
 			//FOR DISPLAY THINGS
@@ -146,19 +147,13 @@ export default defineComponent({
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
-			console.log("search invoke")
 			var projectsToBeShown = []
 			for (var i = 0; i < this.projectList.length; i++) {
 				try {
 					var currentTitle = this.projectList[i].projectTitle
-					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) {
-						projectsToBeShown.push(this.projectList[i])
-					}
+					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) projectsToBeShown.push(this.projectList[i])
 				}
-				catch {
-					console.log('yes')
-				}
-				
+				catch {null}	
 			}
 			this.projectsShown = projectsToBeShown
 
