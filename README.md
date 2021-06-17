@@ -23,8 +23,11 @@ npm run build
     - places which interact with PDFs and Images
         - Search
         - Discover
-        - Upload
         - Indiv pages
+
+        - Upload
+            - FILE SIZE LIMIT?
+            - UPLOAD BAR?
         - Admin Area
 
 ## Far Future

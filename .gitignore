@@ -26,3 +26,5 @@ pnpm-debug.log*
 .env.*
 
 /functions/tests
+/public/cock
+/public/img/icons(old)
