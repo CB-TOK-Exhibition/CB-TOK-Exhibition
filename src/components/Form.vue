@@ -224,7 +224,7 @@ export default defineComponent({
 			const fileInput = document.getElementById('fileInput') as HTMLInputElement
 			const imageInput = document.getElementById('imageInput') as HTMLInputElement
 
-			if(!this.formReadyM() || !fileInput?.files || !imageInput?.files){
+			if(!this.formReadyM() || !fileInput?.files || !fileInput.files[0] || !imageInput?.files || !imageInput.files[0]){
 				this.$toast.add({severity:'error', summary: 'Form Not Complete', detail:'Complete form to submit', life: 5000});
 				return;
 			}
@@ -248,8 +248,8 @@ export default defineComponent({
 			const year = this.getSchoolYearString()
 			const selectedClass = this.selectedClass.name
 			const [pdfRef, imageRef] = [storage.ref(`projects/${year}/${selectedClass}/${fun.id}.pdf`), storage.ref(`images/${year}/${selectedClass}/${fun.id}.${this.imageFileName.split(".")[1]}`)]
-			const pdfTask = pdfRef.put((document.querySelector('#fileInput') as HTMLInputElement).files![0])
-			const imageTask = imageRef.put((document.querySelector('#imageInput') as HTMLInputElement).files![0])
+			const pdfTask = pdfRef.put(fileInput.files[0])
+			const imageTask = imageRef.put(imageInput.files[0])
 			
 			const snapshots = await Promise.all([pdfTask, imageTask])
 			this.$router.push("/uploadCheck")

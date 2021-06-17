@@ -4,6 +4,7 @@ export default interface project{
     projectTitle: string,
     topics: number[],
     imageExtension: string,
+    imageURL: string,
     rating:number,
 
     class: string,

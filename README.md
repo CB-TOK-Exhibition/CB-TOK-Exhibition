@@ -20,15 +20,15 @@ npm run build
 
 # MASTER TO DO
 - MIGRATE TO GOOGLE STORAGE
-    - places which interact with PDFs and Images
-        - Search
-        - Discover
-        - Indiv pages
+    - Upload ✅
+        - FILE SIZE LIMIT?
+        - UPLOAD BAR?
+- Admin Page
+    - editing classes and stuff
 
-        - Upload
-            - FILE SIZE LIMIT?
-            - UPLOAD BAR?
-        - Admin Area
+# Instructions
+- Go to http://colonelby.com/teachers/TOK
+- Click on "post" button on homepage, sign in with google, and post PDF with class number. 
 
 ## Far Future
 - Discover page filters

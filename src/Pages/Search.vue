@@ -28,7 +28,7 @@
 				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
-						<img :src="getThumbnailURL(project)" class="w-full" id="itemPhoto"/>
+						<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
 
 						<!-- BOTTOM BITS -->
 						<div class="p-4 flex-1 flex flex-col justify-around">
@@ -57,15 +57,13 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import project from '@/types/projects'
-import {db} from '@/firebase'
+import {db, storage} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
-import getThumbnail from "@/mixins/getThumbnail"
 
 export default defineComponent({
 	name:'Search',
 	components:{Pods},
-	mixins:[getThumbnail],
 	data() {
 		return {
 			//FOR DISPLAY THINGS
@@ -135,15 +133,17 @@ export default defineComponent({
 			if(query) querySnapshot = await query.get();
 			else querySnapshot = await ref.get()
 
-			querySnapshot.forEach((doc) => {
+			await Promise.all(querySnapshot.docs.map(async (doc) => {
 				let project = doc.data() as project
 				project.id = doc.id
+				project.imageURL = await storage.ref(`/images/${project.year}/${project.class}/${doc.id}.${project.imageExtension}`).getDownloadURL().catch(err=>{
+					console.warn("Firebase Storage Error:", err)
+				})
 				out.push(project)
-			});
+			}))
 			this.projectList = out
-			
-			this.projectsLoaded = true;
 			this.projectsShown = out;
+			this.projectsLoaded = true;
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
