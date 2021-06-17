@@ -100,8 +100,7 @@ export default defineComponent({
 			// Get the project at 'this.id' and place in this.doc
 			this.doc = {} as project;
 			const projectSnapshot = await db.collection("projects").doc(this.ids[this.id]).get()
-			const projectData = projectSnapshot.data() as project
-			this.doc = projectData
+			this.doc = projectSnapshot.data() as project
 			this.doc.id = projectSnapshot.id
 
 			//LOAD THE IMAGE

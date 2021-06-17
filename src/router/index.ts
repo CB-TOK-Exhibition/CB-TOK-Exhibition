@@ -127,12 +127,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
 	document.title = to.meta.title ? to.meta.title + " | CB TOK Exhbition" : "CB TOK Exhibition"
 	Vuex.commit('routeLoaded', false);
-	console.log("before")
 	next()
 })
 router.afterEach(() => {
 	Vuex.commit('routeLoaded', true);
-	console.log("after")
 })
 
 export default router

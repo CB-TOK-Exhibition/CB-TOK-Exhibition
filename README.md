@@ -19,17 +19,13 @@ npm run build
 ```
 
 # MASTER TO DO
-- Mobile Compatible
-
-## Vansh
-- search bar functionality
-
-## Oscar
-- search page banner
-
-## Edwin
-- Discover page project tile
-    - Amro get the design
+- MIGRATE TO GOOGLE STORAGE
+    - places which interact with PDFs and Images
+        - Search
+        - Discover
+        - Upload
+        - Indiv pages
+        - Admin Area
 
 ## Far Future
 - Discover page filters
