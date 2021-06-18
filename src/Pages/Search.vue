@@ -25,6 +25,7 @@
 
 			<transition name="fade" mode="out-in">
 			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
+				<transition-group name="fade">
 				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
@@ -44,6 +45,7 @@
 						</div>
 					</router-link>
 				</div>
+				</transition-group>
 			</div>
 			<div v-else class="w-full mt-10">
 				<h1 class="text-3xl font-bold">No Projects Found</h1>
@@ -60,10 +62,12 @@ import project from '@/types/projects'
 import {db, storage} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
+import getThumbnail from "@/mixins/getThumbnail"
 
 export default defineComponent({
 	name:'Search',
 	components:{Pods},
+	mixins:[getThumbnail],
 	data() {
 		return {
 			//FOR DISPLAY THINGS
@@ -136,9 +140,7 @@ export default defineComponent({
 			await Promise.all(querySnapshot.docs.map(async (doc) => {
 				let project = doc.data() as project
 				project.id = doc.id
-				project.imageURL = await storage.ref(`/images/${project.year}/${project.class}/${doc.id}.${project.imageExtension}`).getDownloadURL().catch(err=>{
-					console.warn("Firebase Storage Error:", err)
-				})
+				project.imageURL = await this.getThumbnailURL(project)
 				out.push(project)
 			}))
 			this.projectList = out

@@ -17,7 +17,7 @@
 			</div>
 			<form @submit="submit">
 				<label for="title" class="text-2xl font-bold mb-2 mt-6">Title / Prompt</label>
-				<input type="text" name="title" id="title" class="block border-2 w-full p-2 focus:ring noOutline rounded-lg" v-model="title">
+				<input type="text" name="title" id="title" class="block border-2 w-full p-2 focus:ring noOutline rounded-lg" v-model="title" autocomplete="false">
 
 				<!-- PDF -->
 				<input type="file" class="hidden" name="fileInput" id="fileInput" accept="application/pdf" @change="inputChange">
@@ -223,6 +223,8 @@ export default defineComponent({
 			//check if all needed elements are here
 			const fileInput = document.getElementById('fileInput') as HTMLInputElement
 			const imageInput = document.getElementById('imageInput') as HTMLInputElement
+			const q = this.imageFileName.split(".")
+			const extension = q[q.length - 1];
 
 			if(!this.formReadyM() || !fileInput?.files || !fileInput.files[0] || !imageInput?.files || !imageInput.files[0]){
 				this.$toast.add({severity:'error', summary: 'Form Not Complete', detail:'Complete form to submit', life: 5000});
@@ -237,7 +239,7 @@ export default defineComponent({
 					//eslint-disable-next-line
 					author: auth.currentUser!.email,
 					projectTitle: this.title,
-					imageExtension: this.imageFileName.split(".")[1],
+					imageExtension: extension,
 					rating: 0,
 					topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
 				} as project
@@ -247,7 +249,7 @@ export default defineComponent({
 			//upload files
 			const year = this.getSchoolYearString()
 			const selectedClass = this.selectedClass.name
-			const [pdfRef, imageRef] = [storage.ref(`projects/${year}/${selectedClass}/${fun.id}.pdf`), storage.ref(`images/${year}/${selectedClass}/${fun.id}.${this.imageFileName.split(".")[1]}`)]
+			const [pdfRef, imageRef] = [storage.ref(`projects/${year}/${selectedClass}/${fun.id}.pdf`), storage.ref(`images/${year}/${selectedClass}/${fun.id}.${extension}`)]
 			const pdfTask = pdfRef.put(fileInput.files[0])
 			const imageTask = imageRef.put(imageInput.files[0])
 			
@@ -297,7 +299,7 @@ export default defineComponent({
 		},
 
 
-
+		//PDFS
         dropHandle(e: DragEvent){
 			const files = this.dropVerify(e, "pdf");
 
@@ -308,10 +310,14 @@ export default defineComponent({
 			this.uploaded = true;
 			(document.querySelector('#fileInput') as HTMLInputElement).files = files
 		},
-		inputChange(e: Event){
+		inputChange(e: InputEvent){
+			if(!this.verify(e, "pdf")) return
+			//no null
 			this.fileName = (e.target as HTMLInputElement).files![0].name;
 			this.uploaded = true;
 		},
+
+		//IMAGES
 		dropImageHandle(e: DragEvent){
 			const files = this.dropVerify(e, "img");
 
@@ -322,24 +328,39 @@ export default defineComponent({
 			this.imageUploaded = true;
 			(document.querySelector('#imageInput') as HTMLInputElement).files = files
 		},
-		inputImageChange(e: Event){
+		inputImageChange(e: InputEvent){
+			if(!this.verify(e, "img")) return
+			//no null
 			this.imageFileName = (e.target as HTMLInputElement).files![0].name;
 			this.imageUploaded = true;
 		},
+
+
+		//VERIFY FOR INPUTS
+		verify(e: InputEvent, fileType: string){
+			//no null x 2
+			const files = (e.target! as HTMLInputElement).files!
+			return !!this.backVerify(files, fileType)
+		},
+		//VERIFY FOR DROPS
 		dropVerify(e: DragEvent, fileType: string){
 			if(!e.dataTransfer){return}
 			const files = e.dataTransfer.files
+			return this.backVerify(files, fileType)
+		},
+		//CORE VERIFY
+		backVerify(files: FileList, fileType: string){
 			if(files.length > 1){
 				this.$toast.add({severity:'error', summary: 'Too Many Files', detail:'Only Drop 1 file at a time', life: 5000});
-				return;
+				return false;
 			}
 			else if(fileType == "pdf" && files[0].type != "application/pdf"){
 				this.$toast.add({severity:'error', summary: 'Only Submit PDFs', detail:'Don\'t submit anything other than PDFs', life: 5000});
-				return;
+				return false;
 			}
 			else if(fileType == "img" && files[0].type.split("/")[0] != "image"){
 				this.$toast.add({severity:'error', summary: 'Only Submit images', detail:'Don\'t submit anything other than images', life: 5000});
-				return;
+				return false;
 			}
 
 			return files
