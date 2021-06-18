@@ -19,7 +19,12 @@ npm run build
 ```
 
 # MASTER TO DO
-- Mobile Compatible
+- MIGRATE TO GOOGLE STORAGE
+    - Upload ✅
+        - FILE SIZE LIMIT?
+        - UPLOAD BAR?
+- Admin Page
+    - editing classes and stuff
 
 # Instructions
 - Go to http://colonelby.com/teachers/TOK
@@ -27,13 +32,6 @@ npm run build
 - Panik Attack
 ## Vansh
 - search bar functionality
-
-## Oscar
-- search page banner
-
-## Edwin
-- Discover page project tile
-    - Amro get the design
 
 ## Far Future
 - Discover page filters

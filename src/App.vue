@@ -6,6 +6,7 @@
 		<transition name="fade" mode="out-in">
 			<component v-if="$store.state.routeLoaded" :is="slotProps.Component"></component>
 			<div v-else class="h-screen grid place-items-center">
+				<!-- TODO PRIMARY LOADING -->
 				<h1 class="text-4xl font-bold">LOADING</h1>
 			</div>
 		</transition>
@@ -14,16 +15,17 @@
 </template>
 
 <script lang="ts">
-	import { defineComponent } from "vue"
-	import footer from '@/components/Footer.vue'
-	import Navbar from "./components/Navbar.vue"
-	export default defineComponent({
-		name:"App",
-		components:{
-			'footitty': footer,
-			Navbar,
-		}
-	})
+import { defineComponent } from "vue"
+import footer from '@/components/Footer.vue'
+import Navbar from "@/components/Navbar.vue"
+
+export default defineComponent({
+	name:"App",
+	components:{
+		'footitty': footer,
+		Navbar,
+	}
+})
 </script>
 
 <style lang="scss">

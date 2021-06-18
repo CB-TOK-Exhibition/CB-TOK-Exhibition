@@ -26,4 +26,5 @@ pnpm-debug.log*
 .env.*
 
 /functions/tests
-getClient.ts
+/public/cock
+/public/img/icons(old)
