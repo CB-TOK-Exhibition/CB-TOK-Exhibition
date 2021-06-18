@@ -23,24 +23,24 @@
 /* SLIDE X */
 .slideX-enter-active,
 .slideX-leave-active {
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.slideX-enter-from {
-    transform: translateX(100%);
-}
-
-.slideX-leave-to {
-    transform: translateX(-100%);
+    transition: transform 0.2s ease, opacity .3s ease;
 }
 
 .slideX-enter-from,
 .slideX-leave-to {
-    color:red
+    opacity: 0;
+}
+
+.slideX-enter-from {
+    transform: translateX(60%);
+}
+
+.slideX-leave-to {
+    transform: translateX(-60%);
 }
 
 .slideX-enter-to,
 .slideX-leave-from {
     transform: translateX(0);
-    color:blue
+    opacity: 1;
 }

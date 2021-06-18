@@ -28,11 +28,9 @@
 import { defineComponent } from 'vue'
 import {db} from "@/firebase"
 import { Octokit } from "@octokit/core";
-import getSchoolYear from "@/mixins/getSchoolYear"
 
 export default defineComponent({
     name:"Admin New Class",
-    mixins:[getSchoolYear],
     data() {
         return {
             classes: [] as string[],
@@ -40,8 +38,13 @@ export default defineComponent({
         }
     },
     async created(){
+        const dateMachine = new Date();
+        const year = dateMachine.getFullYear();
+        const month = dateMachine.getMonth();
+        if(month < 9) this.releventYears =  (year - 1) + "-" + year
+        else if (month >= 9) this.releventYears = year + "-" + (year + 1)
+        
         //CHECK IF THIS YEAR EXISTS
-        this.releventYears = this.getSchoolYearString()   
         const yearRef = await db.collection("years").doc(this.releventYears).get()
         if(!yearRef || !yearRef.exists){
             //TODO Year not created, go create a new year

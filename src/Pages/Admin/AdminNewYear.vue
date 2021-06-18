@@ -37,11 +37,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {db} from '@/firebase'
-import getSchoolYear from "@/mixins/getSchoolYear"
 
 export default defineComponent({
     name: "Admin New Year Page",
-    mixins:[getSchoolYear],
     data() {
         return {
             classes: [] as string[],
@@ -51,7 +49,18 @@ export default defineComponent({
         }
     },
     created(){
-        [this.yearStart, this.yearEnd] = this.getSchoolYear()
+        const dateMachine = new Date();
+        const year = dateMachine.getFullYear();
+        const month = dateMachine.getMonth();
+        if(month < 9){
+            this.yearStart = (year - 1)
+            this.yearEnd = year
+        }
+        else if (month >= 9){
+            this.yearStart = year
+            this.yearEnd = year + 1
+        }
+
         this.checkYear()
     },
     methods: {

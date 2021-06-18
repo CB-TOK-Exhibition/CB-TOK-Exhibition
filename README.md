@@ -19,16 +19,17 @@ npm run build
 ```
 
 # MASTER TO DO
-- MIGRATE TO GOOGLE STORAGE
-    - Upload ✅
-        - FILE SIZE LIMIT?
-        - UPLOAD BAR?
-- Admin Page
-    - editing classes and stuff
+- Mobile Compatible
 
-# Instructions
-- Go to http://colonelby.com/teachers/TOK
-- Click on "post" button on homepage, sign in with google, and post PDF with class number. 
+## Vansh
+- search bar functionality
+
+## Oscar
+- search page banner
+
+## Edwin
+- Discover page project tile
+    - Amro get the design
 
 ## Far Future
 - Discover page filters
