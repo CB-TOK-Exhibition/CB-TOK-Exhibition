@@ -21,6 +21,10 @@ npm run build
 # MASTER TO DO
 - Mobile Compatible
 
+# Instructions
+- Go to http://colonelby.com/teachers/TOK
+- Click on "post" button on homepage, sign in with google, and post PDF with class number. 
+- Panik Attack
 ## Vansh
 - search bar functionality
 
