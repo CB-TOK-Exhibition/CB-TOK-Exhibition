@@ -1,10 +1,11 @@
 export default interface project{
     id?:string,
+    author: string,
     projectTitle: string,
     topics: number[],
-    imageFeature: string,
+    imageExtension: string,
+    imageURL: string,
     rating:number,
-    filePath: string,
 
     class: string,
     year:string,

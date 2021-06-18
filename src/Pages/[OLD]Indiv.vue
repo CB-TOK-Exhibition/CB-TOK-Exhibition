@@ -1,46 +1,40 @@
 <template>
-	<div class="pt-16 h-screen flex flex-col relative overflow-hidden">
+	<div class="pt-16 h-screen flex flex-col relative overflow-hidden" id="main">
+	<!-- TODO SOME SORT OF VOTING SYSTEM NOTE TO SELF DON"T BUT COMMENTS IN TEMPLATE CONTEXT-->
 		<Toast />
-        <div id="penis"></div>
-        <div class="grid grid-cols-4 flex-1">
-            <div class="col-span-1"></div>
-            <div id="pdfIframe" class="w-full col-span-2 pt-4">
+		<div class="grid grid-cols-4 flex-1">
+			<div class="col-span-1"></div>
+			<div id="pdfIframe" class="w-full col-span-2 pt-4">
 				<!-- IFRAME IN HERE -->
-				<object :data="pdfURL" type="application/pdf" class="h-full w-full">
-					<embed :src="pdfURL" type="application/pdf">
-				</object>
 			</div>
-            <div class="col-span-1 p-8 bg-white">
+			<div class="col-span-1 p-8 bg-white">
 				<h1 class="text-5xl font-bold leading-tight">{{project.projectTitle}}</h1>
 				<Pods :topics="project.topics" :center="false"></Pods>
-
-				<!-- TODO Review Stars Impliment it -->
 				<div class="flex flex-row mt-3">
 					<svg class="w-8 h-8" v-for="i in project.rating" :key="i" fill="#f0e769" stroke="#ccbf0c" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
 					<svg class="w-8 h-8" v-for="j in 5-(project.rating)" :key="j" fill="#a3a3a3" stroke="#636363" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
 				</div>
 			</div>
-        </div>
-    </div>
+		</div>
+	</div>
 </template>
 <script lang="ts">
 import project from '@/types/projects'
-import { defineComponent } from 'vue'
-import {db, storage} from '@/firebase'
+import { defineComponent } from "@vue/runtime-core";
+import {db} from '@/firebase'
 import getThumbnail from '@/mixins/getThumbnail'
 import Pods from "@/components/Pods.vue"
 
 export default defineComponent({
-    name: "Individual Project Page",
-    data() {
+	name:"Project Page",
+	data() {
 		return {
 			project:{} as project,
-			pdfURL:""
 		}
 	},
 	mixins:[getThumbnail],
 	components:{Pods},
-    async created(){
+	async created(){
 		//GET THE YEAR AND CLASS OF THE PROJECT IN QUESTION
 		const projectID = this.$route.fullPath.substring(1)		
 		const doc = await db.collection('projects').doc(projectID).get().catch(err => {
@@ -55,24 +49,31 @@ export default defineComponent({
 		this.project = data as project
 		this.project.id = projectID
 
-        //ADD BACKGROUND
-		const first = document.getElementById("penis")
-        if(!first) return
-		first.style.backgroundImage = `url('${await this.getThumbnailURL(this.project)}')`
-		
-		const url = await storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).getDownloadURL().catch(err=>{
-			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:err.code, life: 5000})
-		})
-		this.pdfURL = url
-    },
-    methods: {
 
-		//OLD FUNCTIONS
+		//ADD BACKGROUND
+		const first = document.createElement('div');
+		first.classList.add("penis")
+		first.style.backgroundImage = `url('${this.getThumbnailURL(this.project)}')`
+		const main = document.getElementById("main")
+		if(main) main.insertBefore(first, main.childNodes[0])
+
+		// .style.backgroundImage = `url('${this.project.imageFeature}')
+
+		const url = await this.getURL().catch(err=> console.error("A caught error: ", err));
+		if(!url){
+			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:'Cannot access the project PDF at the moment', life: 5000})
+			return
+		}
+		this.mount(url);
+		console.log("this.url set to", url)
+	},
+	methods: {
 		async getURL(): Promise<(string)>{
 			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${(this.project.id as string).split(" ").join("_")}.pdf`
 			const request = await fetch(url, {
 				method: 'GET',
-			}).catch(err=>{console.error("fetch error", err)})
+				mode: 'cors'
+			})
 
 			if(!request || !request?.body || !request.ok) throw "FILE NOT FOUND"
 			const bodyReader = request.body.getReader();
@@ -115,7 +116,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-#penis{
+.penis{
 	position: absolute;
 	top: 0; left: 0;
 	width: 100%; height: 100%;
