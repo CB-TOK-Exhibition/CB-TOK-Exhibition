@@ -2,6 +2,7 @@ import firebase from "firebase/app";
 import "firebase/auth"
 import "firebase/firestore";
 import "firebase/storage"
+import "firebase/analytics"
 
 const firebaseConfig = {
     apiKey: "AIzaSyBGWutrCQ5Gjpv_v8L78Ku1Ia1EGYQQKRs",
@@ -14,10 +15,11 @@ const firebaseConfig = {
 }
 
 const app = firebase.initializeApp(firebaseConfig)
-const db = firebase.firestore()
-const auth = firebase.auth()
-const storage = firebase.storage()
+const db = app.firestore()
+const auth = app.auth()
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+const storage = app.storage()
+const analytics = app.analytics()
 
-export { db, auth, storage };
+export { db, auth, storage, analytics };
 export default app;

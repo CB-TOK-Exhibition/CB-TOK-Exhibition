@@ -25,11 +25,10 @@ npm run build
         - UPLOAD BAR?
 - Admin Page
     - editing classes and stuff
+## Far Future
+- Discover page filters
 
 # Instructions
 - Go to http://colonelby.com/teachers/TOK
 - Click on "post" button on homepage, sign in with google, and post PDF with class number. 
 - Panik Attack
-
-## Far Future
-- Discover page filters

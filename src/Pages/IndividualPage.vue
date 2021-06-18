@@ -1,7 +1,7 @@
 <template>
 	<div class="pt-16 h-screen flex flex-col relative overflow-hidden">
 		<Toast />
-        <div id="penis"></div>
+        <div id="penis" :style="{backgroundImage: `url(${bgURL})`}"></div>
         <div class="grid grid-cols-4 flex-1">
             <div class="col-span-1"></div>
             <div id="pdfIframe" class="w-full col-span-2 pt-4">
@@ -35,7 +35,8 @@ export default defineComponent({
     data() {
 		return {
 			project:{} as project,
-			pdfURL:""
+			pdfURL:"",
+			bgURL: "",
 		}
 	},
 	mixins:[getThumbnail],
@@ -54,16 +55,18 @@ export default defineComponent({
 		if(!data){console.error("data can't even???");this.$router.push('/');return}
 		this.project = data as project
 		this.project.id = projectID
-
-        //ADD BACKGROUND
-		const first = document.getElementById("penis")
-        if(!first) return
-		first.style.backgroundImage = `url('${await this.getThumbnailURL(this.project)}')`
+		console.log("project loaded", this.project, projectID)
 		
+		//ADD BACKGROUND
+		this.bgURL = await this.getThumbnailURL(this.project)
+		console.log("Background added", this.bgURL)
+		
+
 		const url = await storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).getDownloadURL().catch(err=>{
 			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:err.code, life: 5000})
 		})
 		this.pdfURL = url
+		console.log("PDF loaded", url)
     },
     methods: {
 

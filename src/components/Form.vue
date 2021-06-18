@@ -72,14 +72,13 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import {auth,db,storage} from '@/firebase'
+import {analytics, auth,db,storage} from '@/firebase'
 import getSchoolYear from "@/mixins/getSchoolYear"
 
+//TYPES
 import project, {topicsList} from '@/types/projects'
 import okboomer from '@/types/okbm'
 import {User} from '@firebase/auth-types'
-
-
 
 export default defineComponent({
     name:"Form",
@@ -232,18 +231,18 @@ export default defineComponent({
 			}
 
 			//upload to projects database
-			const fun = await db.collection("projects").add({
-					class: this.selectedClass.name as string,
-					year: this.getSchoolYearString(),
+			const project = {
+				class: this.selectedClass.name as string,
+				year: this.getSchoolYearString(),
 
-					//eslint-disable-next-line
-					author: auth.currentUser!.email,
-					projectTitle: this.title,
-					imageExtension: extension,
-					rating: 0,
-					topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
-				} as project
-			)
+				//eslint-disable-next-line
+				author: this.currentUser.email,
+				projectTitle: this.title,
+				imageExtension: extension,
+				rating: 0,
+				topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
+			} as project
+			const fun = await db.collection("projects").add(project)
 
 
 			//upload files
@@ -254,6 +253,11 @@ export default defineComponent({
 			const imageTask = imageRef.put(imageInput.files[0])
 			
 			const snapshots = await Promise.all([pdfTask, imageTask])
+			analytics.logEvent("Submit Event", {
+				uploadSnapshots: snapshots,
+				firestoreEvent: fun,
+				project,
+			})
 			this.$router.push("/uploadCheck")
 			
 			// #region OLD CODE
@@ -312,7 +316,7 @@ export default defineComponent({
 		},
 		inputChange(e: InputEvent){
 			if(!this.verify(e, "pdf")) return
-			//no null
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			this.fileName = (e.target as HTMLInputElement).files![0].name;
 			this.uploaded = true;
 		},
@@ -330,15 +334,14 @@ export default defineComponent({
 		},
 		inputImageChange(e: InputEvent){
 			if(!this.verify(e, "img")) return
-			//no null
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			this.imageFileName = (e.target as HTMLInputElement).files![0].name;
 			this.imageUploaded = true;
 		},
 
-
 		//VERIFY FOR INPUTS
 		verify(e: InputEvent, fileType: string){
-			//no null x 2
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const files = (e.target! as HTMLInputElement).files!
 			return !!this.backVerify(files, fileType)
 		},
