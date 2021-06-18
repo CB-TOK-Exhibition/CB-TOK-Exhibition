@@ -6,6 +6,9 @@
             <div class="col-span-1"></div>
             <div id="pdfIframe" class="w-full col-span-2 pt-4">
 				<!-- IFRAME IN HERE -->
+				<object :data="pdfURL" type="application/pdf" class="h-full w-full">
+					<embed :src="pdfURL" type="application/pdf">
+				</object>
 			</div>
             <div class="col-span-1 p-8 bg-white">
 				<h1 class="text-5xl font-bold leading-tight">{{project.projectTitle}}</h1>
@@ -23,7 +26,7 @@
 <script lang="ts">
 import project from '@/types/projects'
 import { defineComponent } from 'vue'
-import {db} from '@/firebase'
+import {db, storage} from '@/firebase'
 import getThumbnail from '@/mixins/getThumbnail'
 import Pods from "@/components/Pods.vue"
 
@@ -32,6 +35,7 @@ export default defineComponent({
     data() {
 		return {
 			project:{} as project,
+			pdfURL:""
 		}
 	},
 	mixins:[getThumbnail],
@@ -54,25 +58,21 @@ export default defineComponent({
         //ADD BACKGROUND
 		const first = document.getElementById("penis")
         if(!first) return
-		first.style.backgroundImage = `url('${this.getThumbnailURL(this.project)}')`
-        console.log(first)
-
-
-        const url = await this.getURL().catch(err=> console.error("A caught error: ", err));
-		if(!url){
-			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:'Cannot access the project PDF at the moment', life: 5000})
-			return
-		}
-		this.mount(url);
-		console.log("this.url set to", url)
+		first.style.backgroundImage = `url('${await this.getThumbnailURL(this.project)}')`
+		
+		const url = await storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).getDownloadURL().catch(err=>{
+			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:err.code, life: 5000})
+		})
+		this.pdfURL = url
     },
     methods: {
+
+		//OLD FUNCTIONS
 		async getURL(): Promise<(string)>{
 			const url = `https://cb-tok-exhibition.github.io/databasePDFs/${this.project.year}/${this.project.class}/${(this.project.id as string).split(" ").join("_")}.pdf`
 			const request = await fetch(url, {
 				method: 'GET',
-				mode: 'cors'
-			})
+			}).catch(err=>{console.error("fetch error", err)})
 
 			if(!request || !request?.body || !request.ok) throw "FILE NOT FOUND"
 			const bodyReader = request.body.getReader();

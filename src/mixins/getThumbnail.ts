@@ -1,8 +1,11 @@
+import {storage} from "@/firebase"
 import project from "@/types/projects"
 export default {
     methods: {
-        getThumbnailURL(project: project): string{
-            return `https://cb-tok-exhibition.github.io/databasePDFs/${project.year}/${project.class}/${project.id}.${project.imageExtension}`
+        async getThumbnailURL(project: project): Promise<string>{
+            const url = await storage.ref(`/images/${project.year}/${project.class}/${project.id}.${project.imageExtension}`).getDownloadURL()
+            return url
+            // return `https://cb-tok-exhibition.github.io/databasePDFs/${project.year}/${project.class}/${project.id}.${project.imageExtension}`
         },
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
         concatenate(resultConstructor: any, ...arrays: any[]): any{
