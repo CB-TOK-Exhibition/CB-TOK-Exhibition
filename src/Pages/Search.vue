@@ -1,5 +1,4 @@
 <template>
-
 	<div class="min-h-screen w-full">
 		<div class="h-72 w-full bg-blue-300 flex flex-col justify-end pl-6 pb-12 lg:pl-32 lg:pb-20" id="searchBanner">
 			<p>
@@ -10,13 +9,11 @@
 
 
 		<div class="w-full px-4 lg:px-32">
-
-
 			<div id="searchBar" class="w-full">
 				<input
 				type="search"
 				class="border-4 border-gray-300 w-full p-4 rounded-xl noOutline focus:ring text-xl hover:shadow-lg"
-				name="search" id="search" v-model="search" v-on:input="searchChange">
+				name="search" id="search" v-model.lazy="search" @change="searchChange">
 			</div>
 			<div class="flex flex-row mt-4 gap-x-4">
 				<Dropdown @change="changeYear" v-model="filterYear" :options="years" optionLabel="name" placeholder="Filter Year..."/>
@@ -24,12 +21,11 @@
 			</div>
 
 			<transition name="fade" mode="out-in">
-			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
-				<transition-group name="fade">
-				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+			<div id="searchResults" v-if="projectsLoaded && projectList.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
+				<div v-for="(project, i) in projectList" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
-						<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
+						<img :src="project.imageFeature" class="w-full" id="itemPhoto"/>
 
 						<!-- BOTTOM BITS -->
 						<div class="p-4 flex-1 flex flex-col justify-around">
@@ -45,7 +41,6 @@
 						</div>
 					</router-link>
 				</div>
-				</transition-group>
 			</div>
 			<div v-else class="w-full mt-10">
 				<h1 class="text-3xl font-bold">No Projects Found</h1>
@@ -53,26 +48,22 @@
 			</transition>
 		</div>
 	</div>
-
 </template>
 
 <script lang="ts">
 import {defineComponent} from 'vue'
 import project from '@/types/projects'
-import {db, storage} from '@/firebase'
+import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
-import getThumbnail from "@/mixins/getThumbnail"
 
 export default defineComponent({
 	name:'Search',
 	components:{Pods},
-	mixins:[getThumbnail],
 	data() {
 		return {
 			//FOR DISPLAY THINGS
 			projectList:[] as project[],
-			projectsShown:[] as project[],
 			projectsLoaded: false,
 
 
@@ -137,28 +128,18 @@ export default defineComponent({
 			if(query) querySnapshot = await query.get();
 			else querySnapshot = await ref.get()
 
-			await Promise.all(querySnapshot.docs.map(async (doc) => {
+			querySnapshot.forEach((doc) => {
 				let project = doc.data() as project
 				project.id = doc.id
-				project.imageURL = await this.getThumbnailURL(project)
 				out.push(project)
-			}))
+			});
 			this.projectList = out
-			this.projectsShown = out;
+			
 			this.projectsLoaded = true;
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
-			var projectsToBeShown = []
-			for (var i = 0; i < this.projectList.length; i++) {
-				try {
-					var currentTitle = this.projectList[i].projectTitle
-					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) projectsToBeShown.push(this.projectList[i])
-				}
-				catch {null}	
-			}
-			this.projectsShown = projectsToBeShown
-
+			console.log("search invoke")
 		},
 	}
 })

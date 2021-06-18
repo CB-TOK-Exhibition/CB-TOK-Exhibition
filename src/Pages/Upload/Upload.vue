@@ -37,10 +37,15 @@ export default defineComponent({
 			if (user && user != null) {
 				this.currentUser = user
 				//check if user has already submitted
-				const snapshot = await db.collection("projects").where("author", "==", user.email).get()
-				snapshot.forEach(()=>{
-					this.userSubmitted = true
+				const snapshot = await db.collection('publishedUsers').where("email", "==", user?.email).get().catch(err => {
+					console.error(err);
+					this.$router.push('/')
 				})
+				if(!snapshot) return
+				snapshot.forEach(e => {
+					const doc = e.data()
+					if (doc) this.userSubmitted = true
+				});
 				this.userDetermined = true;
 			}
 			
