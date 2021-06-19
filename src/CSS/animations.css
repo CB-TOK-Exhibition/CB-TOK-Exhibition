@@ -1,11 +1,16 @@
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.2s ease;
+    transition: opacity 0.5s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+    opacity: 1
 }
 
 
@@ -36,11 +41,11 @@
 
 .slideX-enter-from,
 .slideX-leave-to {
-    color:red
+    color: red
 }
 
 .slideX-enter-to,
 .slideX-leave-from {
     transform: translateX(0);
-    color:blue
+    color: blue
 }

@@ -25,6 +25,10 @@ npm run build
         - UPLOAD BAR?
 - Admin Page
     - editing classes and stuff
+- Fix discover page jank
+- individual page redesign
+- suggestions box in footer or somewhere
+
 ## Far Future
 - Discover page filters
 

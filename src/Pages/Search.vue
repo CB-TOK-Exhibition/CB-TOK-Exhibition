@@ -59,7 +59,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import project from '@/types/projects'
-import {db, storage} from '@/firebase'
+import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
 import getThumbnail from "@/mixins/getThumbnail"
