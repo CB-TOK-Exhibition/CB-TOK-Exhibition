@@ -19,15 +19,14 @@ npm run build
 ```
 
 # MASTER TO DO
-- MIGRATE TO GOOGLE STORAGE
-    - Upload ✅
-        - FILE SIZE LIMIT?
-        - UPLOAD BAR?
+- Upload
+    - FILE SIZE LIMIT?
+    - UPLOAD BAR?
 - Admin Page
     - editing classes and stuff
-- Fix discover page jank
 - individual page redesign
-- suggestions box in footer or somewhere
+- mobile compatability
+- Edit changes upload form page
 
 ## Far Future
 - Discover page filters

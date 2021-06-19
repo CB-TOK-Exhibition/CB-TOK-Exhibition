@@ -1,5 +1,5 @@
 <template>
-	<div class="pt-16 h-screen flex flex-col relative overflow-hidden">
+	<div class="pt-16 h-screen flex flex-col relative overflow-hidden" v-if="!four04">
 		<Toast />
         <div id="penis" :style="{backgroundImage: `url(${bgURL})`}"></div>
         <div class="grid grid-cols-4 flex-1">
@@ -22,6 +22,9 @@
 			</div>
         </div>
     </div>
+	<div v-else class="h-screen pt-16 grid place-items-center">
+		<h1 class="text-6xl font-bold">404</h1>
+	</div>
 </template>
 <script lang="ts">
 import project from '@/types/projects'
@@ -37,6 +40,7 @@ export default defineComponent({
 			project:{} as project,
 			pdfURL:"",
 			bgURL: "",
+			four04: false,
 		}
 	},
 	mixins:[getThumbnail],
@@ -49,7 +53,11 @@ export default defineComponent({
 			this.$router.push('/')
 		})
 
-		if (!doc || !doc.exists){console.error("doc doesn't exist???");this.$router.push('/');return}
+		if (!doc || !doc.exists){
+			this.four04 = true
+			document.title = "404 | CB TOK Exhbition"
+			return
+		}
 
 		const data = doc.data();
 		if(!data){console.error("data can't even???");this.$router.push('/');return}

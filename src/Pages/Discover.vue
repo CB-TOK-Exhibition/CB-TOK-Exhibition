@@ -28,7 +28,7 @@
 			<!-- MAIN CONTENT -->
 				<transition name="fade" mode="out-in" @enter="mountImage">
 					<!-- MAIN VISUAL -->
-					<div id="projectTile" class="flex flex-row p-8 gap-x-2 border-4 rounded-xl bg-white" v-if="loaded[i]" :key="3*i" :data-project="i">
+					<div id="projectTile" @click="goToProject(id)" class="flex flex-row p-8 gap-x-6 border-4 rounded-xl bg-white shadow-md hover:shadow-lg cursor-pointer" v-if="loaded[i]" :key="3*i" :data-project="i">
 						<div class="flex-1 flex flex-col justify-center">
 							<h1 class="text-5xl font-bold">{{projects[i].projectTitle}}</h1>
 							<div class="flex flex-row mt-3">
@@ -37,7 +37,7 @@
 							</div>
 							<Pods :topics="projects[i].topics" :center="false"></Pods>
 						</div>
-						<img class="max-w-2xl" style="min-width: 30rem;" alt="">
+						<img class="max-w-2xl" id="projectImage">
 					</div>
 					<!-- LOADING -->
 					<div v-else class="flex-1 h-64 grid place-items-center" :key="3*i+1">
@@ -57,11 +57,7 @@ import Pods from '@/components/Pods.vue'
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import getThumbnail from '@/mixins/getThumbnail'
 //SWIPING
-import SwiperCore, { Navigation} from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/swiper.scss'
-import 'swiper/components/navigation/navigation.scss'
-SwiperCore.use([Navigation]);
 
 export default defineComponent({
 	name:'Discover',
@@ -112,6 +108,10 @@ export default defineComponent({
 			(e.querySelector("img") as HTMLImageElement).src = this.projects[parseInt(e.getAttribute("data-project") as string)].imageURL
 		},
 
+		goToProject(e: string){
+			this.$router.push(`/${e}`)
+		},
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		onSwiper(swiper: any) {
 			this.swiper = swiper
@@ -154,11 +154,16 @@ export default defineComponent({
 }
 
 #projectTile{
-	transition: transform 0.2s ease, opacity 0.2s ease;
-	box-shadow:  0px 30px 14px -20px #0000003b;
+	transition: transform 0.2s ease, opacity .1s linear, box-shadow 0.2s ease;
 	&:hover{
 		transform:scale(1.02)
 	}
+}
+
+#projectImage{
+	width: 33rem;
+    height: 27rem;
+    object-fit: cover;
 }
 
 .yCenter{

@@ -19,6 +19,11 @@ import 'primeicons/primeicons.css'
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 
+import SwiperCore, { Navigation } from 'swiper'
+require('swiper/swiper.scss')
+require('swiper/components/navigation/navigation.scss')
+SwiperCore.use([Navigation]);
+
 
 const app = createApp(App)
 app.component('Dropdown', Dropdown);

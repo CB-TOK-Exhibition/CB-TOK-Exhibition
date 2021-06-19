@@ -90,7 +90,7 @@ const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/:id',
 		name: "Individual Page",
-		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue')
+		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue'),
 	},
 	{
 		path: '/test',

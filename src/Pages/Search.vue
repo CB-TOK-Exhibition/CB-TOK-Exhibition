@@ -24,9 +24,9 @@
 			</div>
 
 			<transition name="fade" mode="out-in">
-			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
+			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
 				<transition-group name="fade">
-				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+				<div v-for="(project, i) in projectsShown" id="projectMain" class="rounded-3xl overflow-hidden shadow-md hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
 					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
 						<!-- IMAGE -->
 						<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
@@ -47,8 +47,11 @@
 				</div>
 				</transition-group>
 			</div>
-			<div v-else class="w-full mt-10">
+			<div v-else-if="projectsLoaded" class="w-full mt-10">
 				<h1 class="text-3xl font-bold">No Projects Found</h1>
+			</div>
+			<div v-else class="w-full h-64 grid place-items-center">
+				<PulseLoader />
 			</div>
 			</transition>
 		</div>
@@ -63,10 +66,13 @@ import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
 import Pods from "@/components/Pods.vue"
 import getThumbnail from "@/mixins/getThumbnail"
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+
+import firebase from "firebase"
 
 export default defineComponent({
 	name:'Search',
-	components:{Pods},
+	components:{Pods, PulseLoader},
 	mixins:[getThumbnail],
 	data() {
 		return {
@@ -128,24 +134,26 @@ export default defineComponent({
 			//TODO UPDATE SEARCHING ALGORITHM
 			let out = [] as project[]
 
-			const ref = db.collection('projects');
+			const baseRef = db.collection('projects');
 			let query;
-			if(this.filterYear.code) query = ref.where("year", "==", this.filterYear.code)
-			if(this.filterClass.code) query = ref.where("class", "==", this.filterClass.code)
+			if(this.filterYear.code) query = baseRef.where("year", "==", this.filterYear.code)
+			if(this.filterClass.code) query = baseRef.where("class", "==", this.filterClass.code)
 			
-			let querySnapshot;
-			if(query) querySnapshot = await query.get();
-			else querySnapshot = await ref.get()
 
-			await Promise.all(querySnapshot.docs.map(async (doc) => {
-				let project = doc.data() as project
-				project.id = doc.id
-				project.imageURL = await this.getThumbnailURL(project)
-				out.push(project)
-			}))
-			this.projectList = out
-			this.projectsShown = out;
-			this.projectsLoaded = true;
+			const onSnap = async (snapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>): Promise<void> =>{
+				this.projectsLoaded = false;
+				await Promise.all(snapshot.docs.map(async (doc) => {
+					let project = doc.data() as project
+					project.id = doc.id
+					project.imageURL = await this.getThumbnailURL(project)
+					out.push(project)
+				}))
+				this.projectList = out
+				this.projectsShown = out;
+				this.projectsLoaded = true;
+			}
+			if(query) query.onSnapshot(onSnap);
+			else baseRef.onSnapshot(onSnap)
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
@@ -165,15 +173,22 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-	#searchBanner{
-		margin-bottom: -1.5rem;
+#searchBanner{
+	margin-bottom: -1.5rem;
+}
+#searchBar input{
+	transition: background-color 0.3s ease, box-shadow 0.15s ease;
+	&:hover{
+		background-color: #f0f0f0;
 	}
-	#searchBar input{
-		transition: background-color 0.3s ease, box-shadow 0.15s ease;
-		&:hover{
-			background-color: #f0f0f0;
-		}
+}
+
+#projectMain{
+	transition: transform 0.5s ease, box-shadow 0.15s ease;
+	&:hover{
+		transform: scale(1.01);
 	}
+}
 
 #itemPhoto{
 	height: 19rem;

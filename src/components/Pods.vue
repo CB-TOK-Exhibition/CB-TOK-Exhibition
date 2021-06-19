@@ -1,9 +1,11 @@
 <template>
-    <div id="tagList" class="flex flex-row gap-x-2 gap-y-2 mt-6 flex-wrap" :class="{'justify-center': center}">
-        <p v-for="(tag, i) in topics" :key="i" :style="{ backgroundColor: topicColours[tag]}" class="p-1 px-3 rounded-full text-sm text-white font-semibold">
-            {{topicsList[tag]}}
-        </p>
-    </div>
+    <transition name="fade" appear>
+        <div id="tagList" class="flex flex-row gap-x-2 gap-y-2 mt-6 flex-wrap" :class="{'justify-center': center}">
+            <p v-for="(tag, i) in topics" :key="i" :style="{ backgroundColor: topicColours[tag]}" class="p-1 px-3 rounded-full text-sm text-white font-semibold">
+                {{topicsList[tag]}}
+            </p>
+        </div>
+    </transition>
 </template>
 
 <script lang="ts">
@@ -23,3 +25,9 @@ export default defineComponent({
     },
 })
 </script>
+
+<style scoped>
+#tagList{
+    transition-delay: 0.2s;
+}
+</style>

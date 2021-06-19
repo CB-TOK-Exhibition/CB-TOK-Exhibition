@@ -253,10 +253,14 @@ export default defineComponent({
 			const imageTask = imageRef.put(imageInput.files[0])
 			
 			const snapshots = await Promise.all([pdfTask, imageTask])
+
 			analytics.logEvent("Submit Event", {
-				uploadSnapshots: snapshots,
-				firestoreEvent: fun,
-				project,
+				pdfbytesTransferred: snapshots[0].bytesTransferred,
+				imageBytesTransferred: snapshots[1].bytesTransferred,
+				pdfState: snapshots[0].state,
+				imageState: snapshots[1].state,
+				projectTitle: project.projectTitle,
+				uploader: this.currentUser.displayName,
 			})
 			this.$router.push("/uploadCheck")
 			
