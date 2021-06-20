@@ -1,28 +1,28 @@
 /* #region  FTP*/
 // EXPRESS
-import * as express from "express";
-import { Request, Response, NextFunction } from 'express'
-import * as cors from 'cors'
-const app = express();
-app.use(cors({ origin: true }));
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+// import * as express from "express";
+// import { Request, Response, NextFunction } from 'express'
+// import * as cors from 'cors'
+// const app = express();
+// app.use(cors({ origin: true }));
+// app.use(express.json())
+// app.use(express.urlencoded({ extended: false }))
 
-import getFiles from './getFiles'
-import writeFiles from './writeFiles'
-import path = require('path');
-app.get("/get/:fileName", runAsync(getFiles))
-app.post("/write", runAsync(writeFiles));
-app.get("/getControl", (req, res) => {
-	res.sendFile(path.join(__dirname, '../test.pdf'))
-})
+// import getFiles from './getFiles'
+// import writeFiles from './writeFiles'
+// import path = require('path');
+// app.get("/get/:fileName", runAsync(getFiles))
+// app.post("/write", runAsync(writeFiles));
+// app.get("/getControl", (req, res) => {
+// 	res.sendFile(path.join(__dirname, '../test.pdf'))
+// })
 
-type appAction = (arg0: Request, arg1: Response, arg2: NextFunction) => Promise<void>;
-function runAsync(callback: appAction) {
-	return (req: Request, res: Response, next: NextFunction) => {
-		callback(req, res, next).catch(next)
-	}
-}
+// type appAction = (arg0: Request, arg1: Response, arg2: NextFunction) => Promise<void>;
+// function runAsync(callback: appAction) {
+// 	return (req: Request, res: Response, next: NextFunction) => {
+// 		callback(req, res, next).catch(next)
+// 	}
+// }
 /* #endregion */
 
 // Start writing Firebase Functions
@@ -34,26 +34,30 @@ admin.initializeApp();
 export const db = admin.firestore();
 
 //HELLO WORLD TEST
-export const helloWorld = functions.https.onRequest((request, response) => {
-	functions.logger.info("Hello logs!", { structuredData: true });
-	response.send("Hello from Firebase!");
-});
+// export const helloWorld = functions.https.onRequest((request, response) => {
+// 	functions.logger.info("Hello logs!", { structuredData: true });
+// 	response.send("Hello from Firebase!");
+// });
 
+//FTP STUFF
+// export const ftp = functions.https.onRequest(app);
 
 //GET FEATURED PROJECTS
 import getFeatured from './getFeatured'
-export const fourHourSetFeature = functions.pubsub.schedule("0 */4 * * *").onRun(async ()=>{
+export const fourHourSetFeature = functions.pubsub.schedule("0 */4 * * *").onRun(async () => {
 	db.collection('meta').doc('featureProjects').update({
 		projects: await getFeatured()
 	});
 })
+export const fuck = functions.https.onRequest(async () => {
+	db.collection("meta").doc("projects").update({
+		projectCount: (await db.collection("projects").get()).size
+	})
+})
 
-
-//FTP STUFF
-export const ftp = functions.https.onRequest(app);
-
-// UPDATING ALGOLIA INDEX (USED FOR SEARCH)
+/* #region UPDATING ALGOLIA INDEX (USED FOR SEARCH) */
 import algoliasearch from "algoliasearch";
+import firebase from "firebase";
 const APP_ID = "71DQO3F2KO"
 const ADMIN_KEY = "2027099cd83ca8f71e2e5e25cc2a979b"
 
@@ -62,18 +66,27 @@ const index = client.initIndex("projects")
 
 export const addToIndex = functions.firestore.document("projects/{projectId}")
 	.onCreate(snapshot => {
+		db.collection("meta").doc("projects").update({
+			projectCount: firebase.firestore.FieldValue.increment(1)
+		})
 		const data = snapshot.data()
 		const objectID = snapshot.id
 
-		return index.saveObject({...data, objectID})
+		return index.saveObject({ ...data, objectID })
 	})
 
 export const updateIndex = functions.firestore.document("projects/{projectId}")
 	.onUpdate((change) => {
 		const newData = change.after.data()
 		const objectID = change.after.id
-		return index.saveObject({ ...newData, objectID})
+		return index.saveObject({ ...newData, objectID })
 	})
 
 export const deleteFromIndex = functions.firestore.document("projects/{projectId}")
-	.onDelete(snapshot => index.deleteObject(snapshot.id))
+	.onDelete(snapshot => {
+		db.collection("meta").doc("projects").update({
+			projectCount: firebase.firestore.FieldValue.increment(-1)
+		})
+		index.deleteObject(snapshot.id)
+	})
+/* #endregion */

@@ -80,6 +80,14 @@ const routes: Array<RouteRecordRaw> = [
 		}
 	},
 	{
+		path: '/edit',
+		name: 'Edit',
+		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Upload/Edit.vue'),
+		meta: {
+			title: "Edit"
+		}
+	},
+	{
 		path:'/uploadInstructions',
 		name:'Upload Instructions',
 		component: () => import(/* webpackChunkName: "uploadInstructions" */'@/Pages/Upload/UploadInstructions.vue'),

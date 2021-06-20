@@ -24,28 +24,27 @@
 			</div>
 
 			<transition name="fade" mode="out-in">
-			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-				<transition-group name="fade">
-				<div v-for="(project, i) in projectsShown" id="projectMain" class="rounded-3xl overflow-hidden shadow-md hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
-					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
-						<!-- IMAGE -->
-						<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
+			<div v-if="projectsLoaded && projectsShown.length != 0">
+				<div id="searchResults" class="py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+					<transition-group name="fade">
+					<div v-for="(project, i) in projectsShown" id="projectMain" class="rounded-3xl overflow-hidden shadow-md hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+						<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
+							<!-- IMAGE -->
+							<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
 
-						<!-- BOTTOM BITS -->
-						<div class="p-4 flex-1 flex flex-col justify-around">
-							<p class="font-bold text-3xl mt-4 text-center">{{project.projectTitle}}</p>
-							<!-- TAG LIST -->
-							<Pods :topics="project.topics"></Pods>
+							<!-- BOTTOM BITS -->
+							<div class="p-4 flex-1 flex flex-col justify-around">
+								<p class="font-bold text-2xl mt-4 text-center">{{project.projectTitle}}</p>
+								<!-- TAG LIST -->
+								<Pods :topics="project.topics"></Pods>
 
-							<!-- STARS -->
-							<div class="flex flex-row justify-center mt-3">
-								<svg class="w-8 h-8" v-for="i in project.rating" :key="i" fill="#f0e769" stroke="#ccbf0c" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-								<svg class="w-8 h-8" v-for="j in 5-(project.rating)" :key="j" fill="#a3a3a3" stroke="#636363" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+								<!-- STARS -->
+								<Stars :clickable="false" :rating="project.rating" :centered="true"/>
 							</div>
-						</div>
-					</router-link>
+						</router-link>
+					</div>
+					</transition-group>
 				</div>
-				</transition-group>
 			</div>
 			<div v-else-if="projectsLoaded" class="w-full mt-10">
 				<h1 class="text-3xl font-bold">No Projects Found</h1>
@@ -54,6 +53,7 @@
 				<PulseLoader />
 			</div>
 			</transition>
+			<Paginator v-if="projectsShown.length != 0" class="w-full mb-4" v-model:first="offset" :rows="21" :totalRecords="totalProjectCount" @page="onPage($event)"/>
 		</div>
 	</div>
 
@@ -64,15 +64,26 @@ import {defineComponent} from 'vue'
 import project from '@/types/projects'
 import {db} from '@/firebase'
 import okboomer from '@/types/okbm'
+
 import Pods from "@/components/Pods.vue"
+import Stars from "@/components/Stars.vue"
+
 import getThumbnail from "@/mixins/getThumbnail"
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
+
 import firebase from "firebase"
+
+interface pageEvent{
+	page: number,
+	first: number,
+	rows: number,
+	pageCount: number
+}
 
 export default defineComponent({
 	name:'Search',
-	components:{Pods, PulseLoader},
+	components:{Pods, PulseLoader, Stars},
 	mixins:[getThumbnail],
 	data() {
 		return {
@@ -80,6 +91,13 @@ export default defineComponent({
 			projectList:[] as project[],
 			projectsShown:[] as project[],
 			projectsLoaded: false,
+			totalProjectCount: 0,
+			offset:0,
+
+			// PAGINATION
+			lastProject:{} as project,
+			nextProject:{} as project,
+			lastID:0,
 
 
 			//FILTERS
@@ -128,42 +146,65 @@ export default defineComponent({
 		changeClass(){
 			this.getProjects();
 		},
-		async getProjects(){
+		async getProjects(direction?: "up"|"down"){
 			this.projectsLoaded = false;
-
-			//TODO UPDATE SEARCHING ALGORITHM
-			let out = [] as project[]
-
-			const baseRef = db.collection('projects');
-			let query;
-			if(this.filterYear.code) query = baseRef.where("year", "==", this.filterYear.code)
-			if(this.filterClass.code) query = baseRef.where("class", "==", this.filterClass.code)
 			
-
 			const onSnap = async (snapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>): Promise<void> =>{
+				//LOAD PROJECTS
+				let out = [] as project[]
 				this.projectsLoaded = false;
-				await Promise.all(snapshot.docs.map(async (doc) => {
-					let project = doc.data() as project
-					project.id = doc.id
+				for(let i = 0; i < snapshot.docs.length; i++){
+					let project = snapshot.docs[i].data() as project
+					project.id = snapshot.docs[i].id
 					project.imageURL = await this.getThumbnailURL(project)
 					out.push(project)
-				}))
+				}
+				await Promise.all(out)
 				this.projectList = out
 				this.projectsShown = out;
+
+				//UPDATE PROJECT COUNT
+				this.totalProjectCount = ((await db.collection("meta").doc("projects").get()).data() as {projectCount: number}).projectCount
+				this.lastProject = out[0]
+				this.nextProject = out[out.length - 1]
 				this.projectsLoaded = true;
+				this.searchChange()
 			}
-			if(query) query.onSnapshot(onSnap);
-			else baseRef.onSnapshot(onSnap)
+
+			this.totalProjectCount = ((await db.collection("meta").doc("projects").get()).data() as {projectCount: number}).projectCount
+
+			const baseRef = db.collection('projects').orderBy("rating", "desc").limit(21);
+			let query = baseRef;
+			if(this.filterYear.code) query = query.where("year", "==", this.filterYear.code)
+			if(this.filterClass.code) query = query.where("class", "==", this.filterClass.code)
+			if(direction == "up"){
+				const ppp = this.nextProject
+				delete ppp.id
+				query = query.startAfter(ppp)
+			}
+			else if(direction == "down"){
+				const ppp = this.lastProject
+				delete ppp.id
+				query = query.endBefore(ppp)
+			}
+			
+			query.onSnapshot(onSnap)
+		},
+		async onPage(e: pageEvent){
+			console.log(e);
+			if(e.page > this.lastID) this.getProjects("up")
+			else if(e.page < this.lastID) this.getProjects("down")
+			this.lastID = e.page
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
-			var projectsToBeShown = []
-			for (var i = 0; i < this.projectList.length; i++) {
+			let projectsToBeShown = []
+			for (let i = 0; i < this.projectList.length; i++) {
 				try {
-					var currentTitle = this.projectList[i].projectTitle
+					const currentTitle = this.projectList[i].projectTitle
 					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) projectsToBeShown.push(this.projectList[i])
 				}
-				catch {null}	
+				catch {null}
 			}
 			this.projectsShown = projectsToBeShown
 

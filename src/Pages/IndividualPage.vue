@@ -1,5 +1,6 @@
 <template>
 	<div class="pt-16 h-screen flex flex-col relative overflow-hidden" v-if="!four04">
+		<!-- TODO LOADING ANIMATOINS -->
 		<Toast />
         <div id="penis" :style="{backgroundImage: `url(${bgURL})`}"></div>
         <div class="grid grid-cols-4 flex-1">
@@ -10,15 +11,13 @@
 					<embed :src="pdfURL" type="application/pdf">
 				</object>
 			</div>
-            <div class="col-span-1 p-8 bg-white">
+            <div class="col-span-1 p-8 bg-white" v-if="projectLoaded">
 				<h1 class="text-5xl font-bold leading-tight">{{project.projectTitle}}</h1>
 				<Pods :topics="project.topics" :center="false"></Pods>
-
-				<!-- TODO Review Stars Impliment it -->
-				<div class="flex flex-row mt-3">
-					<svg class="w-8 h-8" v-for="i in project.rating" :key="i" fill="#f0e769" stroke="#ccbf0c" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-					<svg class="w-8 h-8" v-for="j in 5-(project.rating)" :key="j" fill="#a3a3a3" stroke="#636363" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-				</div>
+				<Stars :clickable="true" :rating="project.rating" @vote="vote" @noPerms="noPerms"/>
+			</div>
+			<div class="col-span-1 grid bg-white place-items-center" v-else>
+				<PulseLoader />
 			</div>
         </div>
     </div>
@@ -32,19 +31,22 @@ import { defineComponent } from 'vue'
 import {db, storage} from '@/firebase'
 import getThumbnail from '@/mixins/getThumbnail'
 import Pods from "@/components/Pods.vue"
+import Stars from "@/components/Stars.vue"
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 export default defineComponent({
     name: "Individual Project Page",
     data() {
 		return {
 			project:{} as project,
+			projectLoaded: false,
 			pdfURL:"",
 			bgURL: "",
 			four04: false,
 		}
 	},
 	mixins:[getThumbnail],
-	components:{Pods},
+	components:{Pods, Stars, PulseLoader},
     async created(){
 		//GET THE YEAR AND CLASS OF THE PROJECT IN QUESTION
 		const projectID = this.$route.fullPath.substring(1)		
@@ -63,18 +65,15 @@ export default defineComponent({
 		if(!data){console.error("data can't even???");this.$router.push('/');return}
 		this.project = data as project
 		this.project.id = projectID
-		console.log("project loaded", this.project, projectID)
+		this.projectLoaded = true
 		
 		//ADD BACKGROUND
 		this.bgURL = await this.getThumbnailURL(this.project)
-		console.log("Background added", this.bgURL)
 		
-
 		const url = await storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).getDownloadURL().catch(err=>{
 			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:err.code, life: 5000})
 		})
 		this.pdfURL = url
-		console.log("PDF loaded", url)
     },
     methods: {
 
@@ -107,6 +106,29 @@ export default defineComponent({
 			const div = document.getElementById("pdfIframe")
 			if(div) div.appendChild(obj);
 		},
+		async vote(a: number){
+			// eslint-disable-next-line
+			const shit = (await db.collection("projects").doc(this.project.id).get()).data()!
+			
+			let votes, rating;
+			if(!shit.votes) votes = 0 
+			else votes = shit.votes
+			if(!shit.rating) rating = 0
+			else rating = shit.rating
+
+			const newRating = ((rating * votes) + a)/(votes + 1)
+
+			await db.collection("projects").doc(this.project.id).update({
+				rating: newRating,
+				votes: votes + 1
+			})
+
+			this.$toast.add({severity:'success', summary: 'Voted', detail:'Vote submitted', life: 3000});
+		},
+		noPerms(){
+			this.$toast.add({severity:'error', summary: 'You need to be signed in to vote', detail:'Sign in by clicking my projects at the top of the page', life: 3000});
+		},
+
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		concatenate(resultConstructor: any, ...arrays: any[]) {
 			let totalLength = 0;
