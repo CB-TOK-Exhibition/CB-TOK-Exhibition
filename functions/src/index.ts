@@ -27,66 +27,114 @@
 
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
-//FUNCTIONS JARGON
+// FUNCTIONS JARGON
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 admin.initializeApp();
 export const db = admin.firestore();
 
-//HELLO WORLD TEST
+// HELLO WORLD TEST
 // export const helloWorld = functions.https.onRequest((request, response) => {
 // 	functions.logger.info("Hello logs!", { structuredData: true });
 // 	response.send("Hello from Firebase!");
 // });
 
-//FTP STUFF
+// FTP STUFF
 // export const ftp = functions.https.onRequest(app);
 
-//GET FEATURED PROJECTS
-import getFeatured from './getFeatured'
+// GET FEATURED PROJECTS
+import getFeatured from "./getFeatured";
 export const fourHourSetFeature = functions.pubsub.schedule("0 */4 * * *").onRun(async () => {
-	db.collection('meta').doc('featureProjects').update({
-		projects: await getFeatured()
+	db.collection("meta").doc("featureProjects").update({
+		projects: await getFeatured(),
 	});
-})
-export const fuck = functions.https.onRequest(async () => {
+});
+export const fuck = functions.https.onRequest(async (req, res) => {
+	const count = (await db.collection("projects").get()).size;
 	db.collection("meta").doc("projects").update({
-		projectCount: (await db.collection("projects").get()).size
-	})
-})
+		projectCount: count,
+	});
+	res.send(count);
+});
 
 /* #region UPDATING ALGOLIA INDEX (USED FOR SEARCH) */
 import algoliasearch from "algoliasearch";
 import firebase from "firebase";
-const APP_ID = "71DQO3F2KO"
-const ADMIN_KEY = "2027099cd83ca8f71e2e5e25cc2a979b"
 
-const client = algoliasearch(APP_ID, ADMIN_KEY)
-const index = client.initIndex("projects")
+// VANSH's
+// const APP_ID = "71DQO3F2KO"
+// const ADMIN_KEY = "2027099cd83ca8f71e2e5e25cc2a979b"
+
+// EDWIN's
+const APP_ID = "JERBZD5TNR";
+const ADMIN_KEY = "1e3bbc2c8a71aa35303ee9d7ec89caf9";
+
+const client = algoliasearch(APP_ID, ADMIN_KEY);
+const index = client.initIndex("projects");
+
+export const hardUpdateAll = functions.https.onRequest(async (req, res) => {
+	const projects = await db.collection("projects").get();
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const data = [] as any[];
+	projects.docs.forEach((doc)=>{
+		const project = doc.data();
+		project.objectID = doc.id;
+		data.push({
+			objectID: doc.id,
+			projectTitle: project.projectTitle,
+			rating: project.rating,
+			class: project.class,
+			year: project.year,
+		});
+	});
+
+	let error;
+	const repp = await index.replaceAllObjects(data).catch((err)=>{
+		error = err;
+	});
+	res.send([repp, error, data]);
+});
 
 export const addToIndex = functions.firestore.document("projects/{projectId}")
-	.onCreate(snapshot => {
+	.onCreate((snapshot) => {
 		db.collection("meta").doc("projects").update({
-			projectCount: firebase.firestore.FieldValue.increment(1)
-		})
-		const data = snapshot.data()
-		const objectID = snapshot.id
+			projectCount: firebase.firestore.FieldValue.increment(1),
+		}).catch((err)=>{
+			console.log(err);
+		});
+		const project = snapshot.data();
+		const objectID = snapshot.id;
 
-		return index.saveObject({ ...data, objectID })
-	})
+		return index.saveObject({
+			objectID,
+			projectTitle: project.projectTitle,
+			rating: project.rating,
+			class: project.class,
+			year: project.year,
+		});
+	});
 
 export const updateIndex = functions.firestore.document("projects/{projectId}")
 	.onUpdate((change) => {
-		const newData = change.after.data()
-		const objectID = change.after.id
-		return index.saveObject({ ...newData, objectID })
-	})
+		const project = change.after.data();
+		const objectID = change.after.id;
+		return index.saveObject({
+			objectID,
+			projectTitle: project.projectTitle,
+			rating: project.rating,
+			class: project.class,
+			year: project.year,
+		});
+	});
 
 export const deleteFromIndex = functions.firestore.document("projects/{projectId}")
-	.onDelete(snapshot => {
+	.onDelete((snapshot) => {
 		db.collection("meta").doc("projects").update({
-			projectCount: firebase.firestore.FieldValue.increment(-1)
-		})
-		index.deleteObject(snapshot.id)
-	})
+			projectCount: firebase.firestore.FieldValue.increment(-1),
+		}).catch((err) => {
+			console.log(err);
+		});
+		index.deleteObject(snapshot.id);
+	});
 /* #endregion */

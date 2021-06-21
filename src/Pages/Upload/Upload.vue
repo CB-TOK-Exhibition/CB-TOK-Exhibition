@@ -49,7 +49,6 @@ export default defineComponent({
 	methods: {
 		async penis(user: firebase.User){
 			//check if user is banned
-			console.log(user)
 			this.banned = await this.checkBanned(user)
 			if(this.banned){
 				this.userDetermined = true

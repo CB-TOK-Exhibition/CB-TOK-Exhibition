@@ -1,37 +1,41 @@
-import getClient from './getClient'
-import { Request, Response } from 'express'
-import {Transform} from 'stream'
+import getClient from "./getClient";
+import {Request, Response} from "express";
+import {Transform} from "stream";
 
-export default async (req: Request, res: Response) => {
-	console.log(`Right now processing: /pdfs/${req.params.fileName}`)
+export default async (req: Request, res: Response): Promise<void> => {
+	console.log(`Right now processing: /pdfs/${req.params.fileName}`);
 	res.writeHead(200, {
 		"content-type": "application/pdf",
-		'content-disposition': `inline; filename=${req.params.fileName}`,
-		'Accept-Ranges': 'bytes',
+		"content-disposition": `inline; filename=${req.params.fileName}`,
+		"Accept-Ranges": "bytes",
 		// 'Content-Length':write.size(),
-	})
-	//SOME VARIABLES
-	const client = await getClient().catch(err => { throw err })
+	});
+	// SOME VARIABLES
+	const client = await getClient().catch((err) => {
+		throw err;
+	});
 	const out = new Transform({
 		write(chunk, encoding, callback) {
-			console.log('[transform]', chunk, encoding);
+			console.log("[transform]", chunk, encoding);
 			res.write(chunk, encoding);
-			callback()
+			callback();
 		},
 	});
 
-	//DOWNLOAD
-	await client.downloadTo(out, `/pdfs/${req.params.fileName}`).catch(err => { throw err })
+	// DOWNLOAD
+	await client.downloadTo(out, `/pdfs/${req.params.fileName}`).catch((err) => {
+		throw err;
+	});
 	// await client.downloadTo('./test.pdf', `/pdfs/${req.params.fileName}`).catch(err => { throw err })
-	console.log('post download')
-	out.end()
-	res.end()
-	client.close()
+	console.log("post download");
+	out.end();
+	res.end();
+	client.close();
 
-	//GUT CHECK
+	// GUT CHECK
 	// res.sendFile(path.join(__dirname, "../test.pdf"))
 	// return
-	//OLD
+	// OLD
 	// const errorFunction = (err: Error) => {
 	// 	if (err) next(err)
 	// }
@@ -43,4 +47,4 @@ export default async (req: Request, res: Response) => {
 	// 		'x-sent': true
 	// 	}
 	// }
-}
+};

@@ -49,3 +49,18 @@
     transform: translateX(0);
     color: blue
 }
+
+.heightEnterPag-enter-active,
+.heightEnterPag-leave-active {
+    transition: height .2s linear;
+}
+
+.heightEnterPag-enter-from,
+.heightEnterPag-leave-to {
+    height: 0;
+}
+
+.heightEnterPag-enter-to,
+.heightEnterPag-leave-from {
+    height: 74.2639px;
+}
