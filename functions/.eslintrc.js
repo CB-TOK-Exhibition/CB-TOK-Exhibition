@@ -30,5 +30,6 @@ module.exports = {
 		"indent": ["error", "tab"],
 		"no-tabs": 0,
 		"max-len": 0,
+		"camelcase": 0,
 	},
 };
