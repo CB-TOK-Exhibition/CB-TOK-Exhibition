@@ -9,6 +9,22 @@ export default interface project{
 
     class: string,
     year:string,
+
+    votes: number,
+}
+
+export interface noidProject{
+    author: string,
+    projectTitle: string,
+    topics: number[],
+    imageExtension: string,
+    imageURL: string,
+    rating: number,
+
+    class: string,
+    year: string,
+
+    votes: number,
 }
 
 export interface yearContainer{

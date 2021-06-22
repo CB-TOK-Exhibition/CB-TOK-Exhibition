@@ -22,6 +22,7 @@
             <h2 class="font-medium text-xl"><span class="font-semibold">Created</span> by the Students of CB</h2>
             <h2 class="font-medium text-xl"><span class="font-semibold">Organized</span> by Mr.Richardson</h2>
             <h2 class="font-medium text-xl"><span class="font-semibold">Realized</span> by Amro, Briana, Brandon, Edwin, Oscar, Vansh, Aarya, Richard</h2>
+            <h2 class="font-medium text-lg mt-4">Suggestions? Email <a class="text-blue-400 underline" href="mailto:ezhen4@ocdsb.ca">ezhen4@ocdsb.ca</a></h2>
         </div>
     </footer>
 </template>

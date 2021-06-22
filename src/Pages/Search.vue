@@ -1,22 +1,19 @@
 <template>
-
-	<div class="min-h-screen w-full">
-		<div class="h-72 w-full bg-blue-300 flex flex-col justify-end pl-6 pb-12 lg:pl-32 lg:pb-20" id="searchBanner">
-			<p>
-				PUT SOMETHING IN THE BACKGROUND HERE
-			</p>
-			<h1 class="text-white text-6xl font-bold">Search</h1>
+	<div class="w-full">
+		<div class="h-72 w-full relative overflow-hidden" id="searchBanner">
+			<div class="h-full w-full flex flex-col justify-end pl-6 pb-12 lg:pl-32 lg:pb-20">
+				<h1 class="text-white text-6xl font-bold">Search</h1>
+			</div>
+			<div class="absolute top-0 left-0 w-full h-full bg-cover bg-center" id="backgroundImage"></div>
 		</div>
 
 
 		<div class="w-full px-4 lg:px-32">
-
-
 			<div id="searchBar" class="w-full">
 				<input
 				type="search"
 				class="border-4 border-gray-300 w-full p-4 rounded-xl noOutline focus:ring text-xl hover:shadow-lg"
-				name="search" id="search" v-model="search" v-on:input="searchChange">
+				name="search" id="search" v-model="search" @change="searchChange">
 			</div>
 			<div class="flex flex-row mt-4 gap-x-4">
 				<Dropdown @change="changeYear" v-model="filterYear" :options="years" optionLabel="name" placeholder="Filter Year..."/>
@@ -24,33 +21,41 @@
 			</div>
 
 			<transition name="fade" mode="out-in">
-			<div id="searchResults" v-if="projectsLoaded && projectsShown.length != 0" class="h-full w-full py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-2">
-				<transition-group name="fade">
-				<div v-for="(project, i) in projectsShown" class="rounded-3xl overflow-hidden shadow-md transition-shadow hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
-					<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
-						<!-- IMAGE -->
-						<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
+					<div v-if="projectsLoaded && projectList.length != 0">
+						<div id="searchResults" class="py-8 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+							<transition-group name="fade">
+							<div v-for="(project, i) in projectList" id="projectMain" class="rounded-3xl overflow-hidden shadow-md hover:shadow-xl active:shadow-xl flex flex-col" :key="i">
+								<router-link :to="`/${project.id}`" class="flex-1 flex flex-col h-full">
+									<!-- IMAGE -->
+									<img :src="project.imageURL" class="w-full" id="itemPhoto"/>
 
-						<!-- BOTTOM BITS -->
-						<div class="p-4 flex-1 flex flex-col justify-around">
-							<p class="font-bold text-3xl mt-4 text-center">{{project.projectTitle}}</p>
-							<!-- TAG LIST -->
-							<Pods :topics="project.topics"></Pods>
+									<!-- BOTTOM BITS -->
+									<div class="p-4 flex-1 flex flex-col justify-around">
+										<p class="font-bold text-2xl mt-4 text-center">{{project.projectTitle}}</p>
+										<!-- TAG LIST -->
+										<Pods :topics="project.topics"></Pods>
 
-							<!-- STARS -->
-							<div class="flex flex-row justify-center mt-3">
-								<svg class="w-8 h-8" v-for="i in project.rating" :key="i" fill="#f0e769" stroke="#ccbf0c" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
-								<svg class="w-8 h-8" v-for="j in 5-(project.rating)" :key="j" fill="#a3a3a3" stroke="#636363" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+										<!-- STARS -->
+										<Stars :clickable="false" :rating="project.rating" :centered="true"/>
+									</div>
+								</router-link>
 							</div>
+							</transition-group>
 						</div>
-					</router-link>
-				</div>
-				</transition-group>
-			</div>
-			<div v-else class="w-full mt-10">
-				<h1 class="text-3xl font-bold">No Projects Found</h1>
-			</div>
-			</transition>
+					</div>
+					<div v-else-if="projectsLoaded" class="w-full mt-10 h-64">
+						<h1 class="text-3xl font-bold">No Projects Found</h1>
+					</div>
+					<div v-else class="w-full h-64 grid place-items-center">
+						<PulseLoader />
+					</div>
+				</transition>
+
+				<transition name="heightEnterPag">
+					<div class="overflow-hidden" v-if="recordCount > 0 && pagControl">
+						<Paginator class="w-full mb-4" :rows="21" :totalRecords="recordCount" @page="onPage($event)"/>
+					</div>
+				</transition>
 		</div>
 	</div>
 
@@ -58,23 +63,48 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue'
+import {db} from '@/firebase'
+
+//ALGOLIA
+import algoliasearch from "algoliasearch"
+import {SearchResponse} from "@algolia/client-search"
+
+//TYPES
 import project from '@/types/projects'
-import {db, storage} from '@/firebase'
 import okboomer from '@/types/okbm'
+
+//COMPONENTS and MIXINS
+import Stars from "@/components/Stars.vue"
 import Pods from "@/components/Pods.vue"
 import getThumbnail from "@/mixins/getThumbnail"
 
+
+interface pageEvent{
+	page: number,
+	first: number,
+	rows: number,
+	pageCount: number
+}
+interface dropdownEvent{
+	originalEvent: MouseEvent,
+	value: {name: string, code: string}
+}
+
+// TODO PROPER PAGINATION, right now it is very manual and taxing
 export default defineComponent({
 	name:'Search',
-	components:{Pods},
+	components:{Pods, Stars},
 	mixins:[getThumbnail],
 	data() {
+		const searchClient = algoliasearch("JERBZD5TNR", "7b3aa8569e2b61645013ab83a6341c2b")
+		const index = searchClient.initIndex("projects")
 		return {
 			//FOR DISPLAY THINGS
 			projectList:[] as project[],
-			projectsShown:[] as project[],
 			projectsLoaded: false,
-
+			recordCount: 0,
+			pagControl: true,
+			index: index,
 
 			//FILTERS
 			search:"",
@@ -97,86 +127,123 @@ export default defineComponent({
 		}
 	},
 	created(){
-		this.getProjects();
+		this.updateSearch()
 	},
 	methods:{
-		async changeYear(){
-			this.classes = []
-			this.filterClass = {name:"No Filter",code:""} as okboomer
-			
-			this.getProjects();
-
-			if(!this.filterYear.code) return
+		async changeYear(a: dropdownEvent){
+			this.updateSearch()
+		
+			//GET CLASSES FOR THAT YEAR
 			this.classFilterLoading = true
-			const a = await db.collection("years").doc(this.filterYear.code).get()
-			const data = a.data() as {classes: string[]}
 
-			data.classes.forEach(className=>{
-				this.classes.push({
-					name:className,
-					code:className
-				})
-			})
+			this.filterClass = {name:"No Filter",code:""} as okboomer
+			this.classes = [{name:"No Filter",code:""}]
+			if(a.value.code){
+				const data = (await db.collection("years").doc(a.value.code).get()).data() as {classes: string[]}
+				data.classes.forEach(className=>{this.classes.push({name:className,code:className})})
+			}
+
 			this.classFilterLoading = false
 		},
-		changeClass(){
-			this.getProjects();
-		},
-		async getProjects(){
-			this.projectsLoaded = false;
 
-			//TODO UPDATE SEARCHING ALGORITHM
-			let out = [] as project[]
-
-			const ref = db.collection('projects');
-			let query;
-			if(this.filterYear.code) query = ref.where("year", "==", this.filterYear.code)
-			if(this.filterClass.code) query = ref.where("class", "==", this.filterClass.code)
-			
-			let querySnapshot;
-			if(query) querySnapshot = await query.get();
-			else querySnapshot = await ref.get()
-
-			await Promise.all(querySnapshot.docs.map(async (doc) => {
-				let project = doc.data() as project
-				project.id = doc.id
-				project.imageURL = await this.getThumbnailURL(project)
-				out.push(project)
-			}))
-			this.projectList = out
-			this.projectsShown = out;
-			this.projectsLoaded = true;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		changeClass(a: dropdownEvent){
+			this.updateSearch()
 		},
 		searchChange(){
 			//TODO SET UP ALGOLIA AND SEARCH
-			var projectsToBeShown = []
-			for (var i = 0; i < this.projectList.length; i++) {
-				try {
-					var currentTitle = this.projectList[i].projectTitle
-					if (currentTitle.toLowerCase().indexOf(this.search.toLowerCase()) !== -1) projectsToBeShown.push(this.projectList[i])
-				}
-				catch {null}	
-			}
-			this.projectsShown = projectsToBeShown
+			this.updateSearch()
+		},
 
+		// PAGNATION
+		async onPage(e: pageEvent){
+			window.scroll(0, 0)
+			await this.updateSearch(e.page)
+		},
+		async updateSearch(pageNum?: number){
+			this.projectsLoaded = false
+
+			this.projectList = []
+			if(!pageNum) pageNum = 0
+			const result = await this.algoliaQuery(pageNum)
+			this.recordCount = result.nbHits
+			this.projectList = await this.getByIds(result)
+			this.projectsLoaded = true
+		},
+		async algoliaQuery(pageNum: number){
+			this.projectsLoaded = false;
+			const [className, year] = [this.filterClass.code, this.filterYear.code]
+			//generate filter
+			let filters = []
+			if(className) filters.push(`class:${className}`)
+			if(year) filters.push(`year:${year}`)
+			const result = await this.index.search(this.search, {
+				facetFilters: filters,
+				page: pageNum,
+			})
+			return result
+		},
+		async getByIds(result: SearchResponse): Promise<project[]>{
+			// console.time()
+			let ids = result.hits.map(doc => doc.objectID)
+			
+			let temp = []
+			let out = [] as project[]
+			for(const id of ids) temp.push(db.collection("projects").doc(id).get())
+			// console.log("For loop push")
+			// console.timeLog()
+			// console.log(temp)
+			temp = await Promise.all(temp)
+			// console.log(temp)
+			// console.log("Promise.all the temp")
+			// console.timeLog()
+
+
+			for(const doc of temp){
+				const project = doc.data() as project
+				project.id = doc.id
+				out.push(project)
+			}
+			// console.log("For loop doc")
+			// console.timeLog()
+			const cock = out.map(project=>this.getThumbnailProject(project))
+			out = await Promise.all(cock)
+			// console.log("Final")
+			// console.timeLog()
+			
+			return out
 		},
 	}
 })
 </script>
 
 <style lang="scss">
-	#searchBanner{
-		margin-bottom: -1.5rem;
+#searchBanner{
+	margin-bottom: -1.5rem;
+}
+#searchBar input{
+	transition: background-color 0.3s ease, box-shadow 0.15s ease;
+	&:hover{
+		background-color: #f0f0f0;
 	}
-	#searchBar input{
-		transition: background-color 0.3s ease, box-shadow 0.15s ease;
-		&:hover{
-			background-color: #f0f0f0;
-		}
+}
+
+#projectMain{
+	transition: transform 0.5s ease, box-shadow 0.15s ease;
+	&:hover{
+		transform: scale(1.01);
 	}
+}
 
 #itemPhoto{
 	height: 19rem;
 	object-fit: cover;
+}
+
+#backgroundImage{
+	z-index: -1;
+	background-image: url("../assets/backgroundImage.jpg");
+	filter: blur(6px) grayscale(63%) hue-rotate(20deg);
+	transform: scale(1.05);
 }
 </style>

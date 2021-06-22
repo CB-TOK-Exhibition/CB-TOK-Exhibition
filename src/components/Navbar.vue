@@ -3,7 +3,7 @@
         <router-link to="/">Home</router-link>
 		<router-link to="/search">Search</router-link>
 		<router-link to="/discover">Discover</router-link>
-		<router-link to="/upload">Sign in and Upload</router-link>
+		<router-link to="/upload">My Projects</router-link>
     </nav>
 </template>
 

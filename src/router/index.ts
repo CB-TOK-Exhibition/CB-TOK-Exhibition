@@ -80,6 +80,14 @@ const routes: Array<RouteRecordRaw> = [
 		}
 	},
 	{
+		path: '/edit',
+		name: 'Edit',
+		component: () => import(/* webpackChunkName: "upload" */'@/Pages/Upload/Edit.vue'),
+		meta: {
+			title: "Edit"
+		}
+	},
+	{
 		path:'/uploadInstructions',
 		name:'Upload Instructions',
 		component: () => import(/* webpackChunkName: "uploadInstructions" */'@/Pages/Upload/UploadInstructions.vue'),
@@ -90,7 +98,7 @@ const routes: Array<RouteRecordRaw> = [
 	{
 		path: '/:id',
 		name: "Individual Page",
-		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue')
+		component: () => import(/* webpackChunkName: "individual_page" */'@/Pages/IndividualPage.vue'),
 	},
 	{
 		path: '/test',

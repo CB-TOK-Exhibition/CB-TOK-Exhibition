@@ -5,6 +5,7 @@
 
 		<div class="col-span-5 lg:col-span-3 pt-16 mx-4 lg:mx-10">
 			<h1 class="text-4xl font-bold mb-6">Upload Page</h1>
+			<!-- USER ZONE -->
 			<div class="flex flex-row flex-wrap border-2 rounded-lg p-4 mb-10 gap-x-5 gap-y-3">
 				<img :src="currentUser.photoURL" alt="" class="flex-0 h-24 w-24">
 				<div class="flex-1 flex items-center">
@@ -15,7 +16,9 @@
 					<button class="border-2 p-4 rounded-lg noOutline focus:ring" @click="signOut">Sign Out</button>
 				</div>
 			</div>
-			<form @submit="submit">
+
+			<!-- FORM BODY -->
+			<form @submit="pageSubmit">
 				<label for="title" class="text-2xl font-bold mb-2 mt-6">Title / Prompt</label>
 				<input type="text" name="title" id="title" class="block border-2 w-full p-2 focus:ring noOutline rounded-lg" v-model="title" autocomplete="false">
 
@@ -61,9 +64,20 @@
 					</div>
 				</div>
 
-				<button type="submit" :disabled="!formReady || disableButton" class="mt-6 mb-4 p-2 px-10 bg-blue-200 border-blue-400 disabled:opacity-50 disabled:cursor-default border-2 rounded-lg font-bold noOutline focus:ring">Submit</button>
+				<!-- LOADER FOR STORAGE -->
+				<ProgressBar :showValue="false" style="transition: height 0.2s ease" :value="fileProgress" class="h-0 mt-2" :class="{'h-2': fileProgress > 0}"/>
+				<ProgressBar :showValue="false" style="transition: height 0.2s ease" :value="imageProgress" class="h-0 mt-2" :class="{'h-2': imageProgress > 0}"/>
+
+				<button type="submit" :disabled="!formReady || disableButton" class="mt-2 mb-4 p-2 px-10 bg-blue-200 border-blue-400 disabled:opacity-50 disabled:cursor-default border-2 rounded-lg font-bold noOutline focus:ring">
+					<span v-if="!disableButton">
+						Submit
+					</span>
+					<ClipLoader v-else :loading="true" :size="20"></ClipLoader>
+				</button>
 			</form>
 		</div>
+
+		<!-- SIDE IMAGE -->
 		<div class="col-span-2 hidden lg:block">
 			<img class="h-full w-full object-cover" src="https://www.lplegal.com/dam/jcr:c45130cc-0dbc-4c58-98e6-a73fec1306cd/iStock-979449394-3.jpg" alt="Image">
 		</div>
@@ -71,35 +85,37 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import {auth,db,storage} from '@/firebase'
+import { defineComponent } from 'vue'
+import {analytics, auth,db,storage} from '@/firebase'
 import getSchoolYear from "@/mixins/getSchoolYear"
 
+//TYPES
 import project, {topicsList} from '@/types/projects'
 import okboomer from '@/types/okbm'
-import {User} from '@firebase/auth-types'
+import firebase from "firebase"
+// import {User} from '@firebase/auth-types'
 
-
+//COMPONENTS
+import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
+import ProgressBar from 'primevue/progressbar';
 
 export default defineComponent({
     name:"Form",
-    props:{
-        currentUser: {
-			required: true,
-			type: Object as PropType<User>
-		}
-    },
 	mixins:[getSchoolYear],
+	components:{ClipLoader, ProgressBar},
     data() {
         return {
 			title:'',
+			currentUser:{},
 
 			// FILE AND RELATED
 			uploaded:false,
 			fileName:'',
+			fileProgress: 0,
 
 			imageUploaded:false,
 			imageFileName:'',
+			imageProgress:0,
 			
 			//CLASS SELECT
 			selectedClass:{
@@ -153,6 +169,7 @@ export default defineComponent({
 				})
 			})
 		}
+		this.currentUser = this.$store.getters.getUser
     },
 	mounted(){
 		// === ADD EVENT LISTENERS === 
@@ -216,6 +233,15 @@ export default defineComponent({
 		formReadyM(){
 			return (!!this.title) && (this.uploaded) && (this.imageUploaded) && (this.checkedTopics.length >= 1) && (this.selectedClass.name != "default");
 		},
+
+		pageSubmit(e: Event){
+			try{
+				this.submit(e)
+			}
+			catch{
+				this.disableButton = false
+			}
+		},
         async submit(e: Event){
 			e.preventDefault()
 			this.disableButton = true;
@@ -232,18 +258,19 @@ export default defineComponent({
 			}
 
 			//upload to projects database
-			const fun = await db.collection("projects").add({
-					class: this.selectedClass.name as string,
-					year: this.getSchoolYearString(),
+			const project = {
+				class: this.selectedClass.name as string,
+				year: this.getSchoolYearString(),
 
-					//eslint-disable-next-line
-					author: auth.currentUser!.email,
-					projectTitle: this.title,
-					imageExtension: extension,
-					rating: 0,
-					topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
-				} as project
-			)
+				//eslint-disable-next-line
+				author: this.$store.getters.getUser.email,
+				projectTitle: this.title,
+				imageExtension: extension,
+				rating: 0,
+				votes: 0,
+				topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
+			} as project
+			const fun = await db.collection("projects").add(project)
 
 
 			//upload files
@@ -253,7 +280,31 @@ export default defineComponent({
 			const pdfTask = pdfRef.put(fileInput.files[0])
 			const imageTask = imageRef.put(imageInput.files[0])
 			
+			const stateChange = (snapshot: firebase.storage.UploadTaskSnapshot)=>{
+				return (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+			}
+			const errorPut = (error: firebase.storage.FirebaseStorageError) => console.error(error.code)
+			const completePut = () => console.log("complete")
+			pdfTask.on('state_changed', (snapshot)=>{
+				this.fileProgress = stateChange(snapshot)
+				console.log(this.fileProgress)
+			}, errorPut, completePut)
+			imageTask.on('state_changed', (snapshot)=>{
+				this.imageProgress = stateChange(snapshot)
+				console.log(this.imageProgress)
+			}, errorPut, completePut)
+
 			const snapshots = await Promise.all([pdfTask, imageTask])
+
+			analytics.logEvent("Submit Event", {
+				pdfbytesTransferred: snapshots[0].bytesTransferred,
+				imageBytesTransferred: snapshots[1].bytesTransferred,
+				pdfState: snapshots[0].state,
+				imageState: snapshots[1].state,
+				projectTitle: project.projectTitle,
+				uploader: this.$store.getters.getUser.displayName,
+			})
+			this.disableButton = false
 			this.$router.push("/uploadCheck")
 			
 			// #region OLD CODE
@@ -312,7 +363,7 @@ export default defineComponent({
 		},
 		inputChange(e: InputEvent){
 			if(!this.verify(e, "pdf")) return
-			//no null
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			this.fileName = (e.target as HTMLInputElement).files![0].name;
 			this.uploaded = true;
 		},
@@ -330,15 +381,14 @@ export default defineComponent({
 		},
 		inputImageChange(e: InputEvent){
 			if(!this.verify(e, "img")) return
-			//no null
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			this.imageFileName = (e.target as HTMLInputElement).files![0].name;
 			this.imageUploaded = true;
 		},
 
-
 		//VERIFY FOR INPUTS
 		verify(e: InputEvent, fileType: string){
-			//no null x 2
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const files = (e.target! as HTMLInputElement).files!
 			return !!this.backVerify(files, fileType)
 		},
