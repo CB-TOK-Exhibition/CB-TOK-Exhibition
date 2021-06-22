@@ -11,14 +11,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Use Node.js ${{ matrix.node-version }} and Github Repo
+    - name: Github Repo
       uses: actions/checkout@v2
+      
+    - name: Use Node.js ${{ matrix.node-version }} 
       uses: actions/setup-node@v1
       with:
         node-version: '14.x'
     - name: NodeJS and Typescript Resolve
-      run: npm i
-      run: tsc
+      run: |
+        npm i
+        tsc
     - name: Build Project
       run: npm run build
     - name: Deploy to FTP
@@ -26,8 +29,9 @@ jobs:
         cd .\ftpDeploy\
         npm run deploy
     - name: "[INFO ABOUT RUN]"
-      run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      run: echo "🍏 This job's status is ${{ job.status }}""
+      run: |
+        echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+        echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+        echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+        echo "🍏 This job's status is ${{ job.status }}""
       
