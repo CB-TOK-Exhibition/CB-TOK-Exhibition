@@ -26,7 +26,6 @@ npm run build
 - individual page redesign
 - mobile compatability
 - Edit changes upload form page
-- CI Maybe
 
 ## Far Future
 - Discover page filters
