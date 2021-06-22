@@ -20,7 +20,7 @@ jobs:
         node-version: '14.x'
     - name: NodeJS and Typescript Resolve
       run: |
-        npm ci
+        npm ci --no-optional
         tsc
     - name: Build Project
       run: npm run build
