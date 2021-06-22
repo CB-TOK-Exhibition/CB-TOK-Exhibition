@@ -14,10 +14,11 @@ jobs:
     - name: Use Node.js ${{ matrix.node-version }} and Github Repo
       uses: actions/checkout@v2
       uses: actions/setup-node@v1
-      run: npm i
-      run: tsc
       with:
         node-version: '14.x'
+    - name: NodeJS and Typescript Resolve
+      run: npm i
+      run: tsc
     - name: Build Project
       run: npm run build
     - name: Deploy to FTP
