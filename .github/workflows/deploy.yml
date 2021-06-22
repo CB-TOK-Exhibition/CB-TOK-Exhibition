@@ -23,7 +23,7 @@ jobs:
       run: npm run build
     - name: Deploy to FTP
       run: |
-        cd .\ftpDeploy\
+        cd ftpDeploy/
         npm ci
         tsc
         npm run deploy
