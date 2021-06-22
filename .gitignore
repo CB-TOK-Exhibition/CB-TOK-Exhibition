@@ -28,3 +28,4 @@ pnpm-debug.log*
 /functions/tests
 /public/cock
 /public/img/icons(old)
+/.github/workflows/test.yml

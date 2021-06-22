@@ -11,9 +11,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: 🎉 The job was automatically triggered by a ${{ github.event_name }} event.
-    - name: 🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-    - name: 🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}.
     - name: Use Node.js ${{ matrix.node-version }} and Github Repo
       uses: actions/checkout@v2
       uses: actions/setup-node@v1
@@ -27,5 +24,9 @@ jobs:
       run: |
         cd .\ftpDeploy\
         npm run deploy
-    - name: 🍏 This job's status is ${{ job.status }}
+    - name: "[INFO ABOUT RUN]"
+      run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      run: echo "🍏 This job's status is ${{ job.status }}""
       
