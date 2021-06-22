@@ -1,0 +1,31 @@
+name: Website CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs: 
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🎉 The job was automatically triggered by a ${{ github.event_name }} event.
+    - name: 🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+    - name: 🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}.
+    - name: Use Node.js ${{ matrix.node-version }} and Github Repo
+      uses: actions/checkout@v2
+      uses: actions/setup-node@v1
+      run: npm i
+      run: tsc
+      with:
+        node-version: '14.x'
+    - name: Build Project
+      run: npm run build
+    - name: Deploy to FTP
+      run: |
+        cd .\ftpDeploy\
+        npm run deploy
+    - name: 🍏 This job's status is ${{ job.status }}
+      
