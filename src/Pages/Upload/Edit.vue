@@ -11,11 +11,9 @@
 import { defineComponent } from 'vue'
 import {db, auth, storage} from "@/firebase"
 import project from "@/types/projects"
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 export default defineComponent({
     name: "Edit",
-    components:{PulseLoader},
     data() {
         return {
             project:{} as project,

@@ -18,13 +18,11 @@ import { defineComponent } from 'vue'
 import {auth, db} from '@/firebase'
 import firebase from "firebase"
 import Form from '@/components/Form.vue'
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 export default defineComponent({
 	name:"Upload",
 	components:{
 		"Form": Form,
-		PulseLoader
 	},
 	data() {
 		return {

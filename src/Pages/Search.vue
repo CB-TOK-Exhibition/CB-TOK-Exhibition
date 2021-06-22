@@ -63,18 +63,22 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue'
-import project from '@/types/projects'
 import {db} from '@/firebase'
-import okboomer from '@/types/okbm'
 
-import Pods from "@/components/Pods.vue"
-import Stars from "@/components/Stars.vue"
-
-import getThumbnail from "@/mixins/getThumbnail"
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
-
+//ALGOLIA
 import algoliasearch from "algoliasearch"
 import {SearchResponse} from "@algolia/client-search"
+
+//TYPES
+import project from '@/types/projects'
+import okboomer from '@/types/okbm'
+
+//COMPONENTS and MIXINS
+import Stars from "@/components/Stars.vue"
+import Pods from "@/components/Pods.vue"
+import getThumbnail from "@/mixins/getThumbnail"
+
+
 interface pageEvent{
 	page: number,
 	first: number,
@@ -89,7 +93,7 @@ interface dropdownEvent{
 // TODO PROPER PAGINATION, right now it is very manual and taxing
 export default defineComponent({
 	name:'Search',
-	components:{Pods, PulseLoader, Stars},
+	components:{Pods, Stars},
 	mixins:[getThumbnail],
 	data() {
 		const searchClient = algoliasearch("JERBZD5TNR", "7b3aa8569e2b61645013ab83a6341c2b")
@@ -159,11 +163,11 @@ export default defineComponent({
 		async updateSearch(pageNum?: number){
 			this.projectsLoaded = false
 
+			this.projectList = []
 			if(!pageNum) pageNum = 0
 			const result = await this.algoliaQuery(pageNum)
 			this.recordCount = result.nbHits
 			this.projectList = await this.getByIds(result)
-
 			this.projectsLoaded = true
 		},
 		async algoliaQuery(pageNum: number){
@@ -202,49 +206,13 @@ export default defineComponent({
 			}
 			// console.log("For loop doc")
 			// console.timeLog()
-			out.map(async project=>{
-				project.imageURL = await this.getThumbnailURL(project)
-			})
+			const cock = out.map(project=>this.getThumbnailProject(project))
+			out = await Promise.all(cock)
 			// console.log("Final")
 			// console.timeLog()
 			
 			return out
 		},
-		// async getProjects(projectCount: number){
-		// 	this.projectsLoaded = false;
-		// 	projectCount += 21
-		// 	this.unSub()
-			
-		// 	const onSnap = async (snapshot: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>): Promise<void> =>{
-		// 		this.projectsLoaded = false;
-		// 		//LOAD PROJECTS
-
-		// 		let out = [] as project[]
-
-		// 		//starts at next multiple of 21 of (length - 21)
-		// 		const starting = Math.ceil((snapshot.docs.length-21)/21) * 21
-		// 		for(let i = starting; i < snapshot.docs.length; i++){
-		// 			let project = snapshot.docs[i].data() as project
-		// 			project.id = snapshot.docs[i].id
-		// 			out.push(project)
-		// 		}
-		// 		await Promise.all(out)
-		// 		out.forEach(async p=> p.imageURL = await this.getThumbnailURL(p))
-		// 		await Promise.all(out)
-				
-		// 		this.projectList = out
-
-		// 		//UPDATE PROJECT COUNT
-		// 		this.totalProjectCount = ((await db.collection("meta").doc("projects").get()).data() as {projectCount: number}).projectCount
-		// 		this.projectsLoaded = true;
-		// 	}
-
-		// 	let query = db.collection('projects').orderBy("rating", "desc").limit(projectCount);
-		// 	if(this.filterYear.code) query = query.where("year", "==", this.filterYear.code)
-		// 	if(this.filterClass.code) query = query.where("class", "==", this.filterClass.code)
-			
-		// 	this.unSub = query.onSnapshot(onSnap)
-		// },
 	}
 })
 </script>

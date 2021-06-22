@@ -25,6 +25,9 @@ require('swiper/swiper.scss')
 require('swiper/components/navigation/navigation.scss')
 SwiperCore.use([Navigation]);
 
+//LOADERS
+import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+
 //CSS FILES
 import '@/CSS/tailwind.css'
 import '@/CSS/static.css'
@@ -35,5 +38,6 @@ const app = createApp(App)
 app.component('Dropdown', Dropdown);
 app.component('Toast', Toast);
 app.component('Paginator', Paginator)
+app.component("PulseLoader", PulseLoader)
 app.use(store).use(router).use(PrimeVue).use(ToastService)
 app.mount('#app')

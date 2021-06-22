@@ -52,7 +52,6 @@ import project, {topicsList} from '@/types/projects'
 import {db} from '@/firebase'
 import Pods from '@/components/Pods.vue'
 import Stars from "@/components/Stars.vue"
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 import getThumbnail from '@/mixins/getThumbnail'
 //SWIPING
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -63,8 +62,7 @@ export default defineComponent({
 	components: {
 		Swiper,
 		SwiperSlide,
-		Pods, 
-		PulseLoader,
+		Pods,
 		Stars
     },
 	data() {

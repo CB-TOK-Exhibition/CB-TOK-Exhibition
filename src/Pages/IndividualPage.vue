@@ -32,7 +32,6 @@ import {db, storage} from '@/firebase'
 import getThumbnail from '@/mixins/getThumbnail'
 import Pods from "@/components/Pods.vue"
 import Stars from "@/components/Stars.vue"
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
 
 export default defineComponent({
     name: "Individual Project Page",
@@ -46,7 +45,7 @@ export default defineComponent({
 		}
 	},
 	mixins:[getThumbnail],
-	components:{Pods, Stars, PulseLoader},
+	components:{Pods, Stars},
     async created(){
 		//GET THE YEAR AND CLASS OF THE PROJECT IN QUESTION
 		const projectID = this.$route.fullPath.substring(1)		

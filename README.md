@@ -21,7 +21,6 @@ npm run build
 # MASTER TO DO
 - Upload
     - FILE SIZE LIMIT?
-    - UPLOAD BAR?
 - Admin Page
     - editing classes and stuff
 - individual page redesign
