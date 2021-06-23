@@ -1,0 +1,36 @@
+name: Website CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs: 
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+    - name: NodeJS and Typescript Resolve
+      run: |
+        npm ci
+    - name: Build Project
+      run: npm run build
+    - name: Deploy to FTP
+      run: |
+        cd ftpDeploy/
+        npm ci
+        tsc
+        npm run deploy
+    - name: "[INFO ABOUT RUN]"
+      run: |
+        echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+        echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+        echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+        echo "🍏 This job's status is ${{ job.status }}"
+      
