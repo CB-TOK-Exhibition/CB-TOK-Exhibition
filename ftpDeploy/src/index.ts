@@ -6,7 +6,7 @@ const build = async() => {
 	await client.access({
 		host: "colonelby.com",
 		user: "cbtok12345",
-		password: "CougarsTOK21",
+		password: process.env.FTP_PASSWORD,
 	})
 	//clear
 	await client.clearWorkingDir()

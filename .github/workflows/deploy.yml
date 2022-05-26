@@ -22,6 +22,8 @@ jobs:
     - name: Build Project
       run: npm run build
     - name: Deploy to FTP
+      env: # Or as an environment variable
+        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       run: |
         cd ftpDeploy/
         npm ci
