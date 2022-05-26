@@ -11,6 +11,8 @@
 import { defineComponent } from 'vue'
 import {db, auth, storage} from "@/firebase"
 import project from "@/types/projects"
+import { collection, deleteDoc, doc, getDocs, query, where } from '@firebase/firestore'
+import { deleteObject, ref } from 'firebase/storage'
 
 export default defineComponent({
     name: "Edit",
@@ -33,7 +35,7 @@ export default defineComponent({
     methods: {
         async loadProject(){
             const email = this.$store.getters.getUser.email
-            const snapshot = await db.collection("projects").where("author", "==", email).get()
+            const snapshot = await getDocs(query(collection(db, "projects"), where("author", "==", email)))
             if(snapshot.empty){
                 this.$router.push("/upload")
                 return
@@ -45,9 +47,10 @@ export default defineComponent({
         },
 
         async deleteProject(){
-            const a = db.collection("projects").doc(this.project.id).delete()
-            const b = storage.ref(`/images/${this.project.year}/${this.project.class}/${this.project.id}.${this.project.imageExtension}`).delete()
-            const c = storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).delete()
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const a = deleteDoc(doc(db, "projects", this.project.id!))
+            const b = deleteObject(ref(storage, `/images/${this.project.year}/${this.project.class}/${this.project.id}.${this.project.imageExtension}`))
+            const c = deleteObject(ref(storage, `/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`))
             await Promise.all([a, b, c])
             this.$router.push("/upload")
         },

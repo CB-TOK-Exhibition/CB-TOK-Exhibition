@@ -27,6 +27,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {db} from "@/firebase"
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import { Octokit } from "@octokit/core";
 import getSchoolYear from "@/mixins/getSchoolYear"
 
@@ -42,13 +43,14 @@ export default defineComponent({
     async created(){
         //CHECK IF THIS YEAR EXISTS
         this.releventYears = this.getSchoolYearString()   
-        const yearRef = await db.collection("years").doc(this.releventYears).get()
+        const yearRef = await getDoc(doc(db, "years", this.releventYears))
         if(!yearRef || !yearRef.exists){
             //TODO Year not created, go create a new year
             console.error("Year Has Not Been Created Yet")
         }
         //LIVE UPDATE CLASSES
-        db.collection("years").doc(this.releventYears).onSnapshot(doc=>{
+        //db.collection("years").doc(this.releventYears)
+        onSnapshot(doc(db, "years", this.releventYears), (doc)=>{
             const yearObject = doc.data() as {classes: string[]}
             this.classes = yearObject.classes
         })
@@ -61,9 +63,8 @@ export default defineComponent({
             }
             const val = (document.getElementById("newClassName") as HTMLInputElement).value;
             this.classes.push(val);
-            db.collection("years").doc(this.releventYears).update({
-                classes: this.classes
-            })
+
+            updateDoc(doc(db, "years", this.releventYears), {classes: this.classes})
 
             //Reset input
             ;(document.getElementById("newClassName") as HTMLInputElement).value = ""
@@ -81,13 +82,13 @@ export default defineComponent({
             this.classes.splice(classNum, 1)
             
             //REMOVE THE CLASS FORM THE YEAR/RELEVENTYEARS DOC ARRAY
-            db.collection("years").doc(this.releventYears).update({
-                classes: this.classes
-            })
+            updateDoc(doc(db, "years", this.releventYears), {classes: this.classes})
             
             //REMOVE THE CLASS FROM THE PROJECT DUMP
-            const removeClasses = await db.collection("projects").where("year", "==", this.releventYears).where("class", "==", relevantClass).get()
-            removeClasses.forEach(thing=> thing.ref.delete())
+            const projects = collection(db, "projects")
+            const q = query(projects, where("class", "==", relevantClass), where("year", "==", this.releventYears))
+            const removeClasses = await getDocs(q)
+            removeClasses.forEach(thing=> deleteDoc(doc(db, "projects", thing.id)))
 
             //REMOVE THE CLASS FROM GITHUB
 			const octokit = new Octokit({ auth: process.env.VUE_APP_ACCESS_CODE });
@@ -111,9 +112,7 @@ export default defineComponent({
             })
         },
         submit(){
-            db.collection("years").doc(this.releventYears).set({
-                classes: this.classes
-            })
+            setDoc(doc(db, "years", this.releventYears), {classes: this.classes})
         }
     }
 })

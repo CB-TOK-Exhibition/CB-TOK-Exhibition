@@ -61,15 +61,10 @@ export const fuck = functions.https.onRequest(async (req, res) => {
 import algoliasearch from "algoliasearch";
 import firebase from "firebase";
 
-// VANSH's
-// const APP_ID = "71DQO3F2KO"
-// const ADMIN_KEY = "2027099cd83ca8f71e2e5e25cc2a979b"
-
 // EDWIN's
 const APP_ID = "JERBZD5TNR";
-const ADMIN_KEY = "1e3bbc2c8a71aa35303ee9d7ec89caf9";
 
-const client = algoliasearch(APP_ID, ADMIN_KEY);
+const client = algoliasearch(APP_ID, process.env.ADMIN_KEY!);
 const index = client.initIndex("projects");
 
 export const hardUpdateAll = functions.https.onRequest(async (req, res) => {

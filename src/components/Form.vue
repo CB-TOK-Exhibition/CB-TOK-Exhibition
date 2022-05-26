@@ -92,12 +92,15 @@ import getSchoolYear from "@/mixins/getSchoolYear"
 //TYPES
 import project, {topicsList} from '@/types/projects'
 import okboomer from '@/types/okbm'
-import firebase from "firebase"
 // import {User} from '@firebase/auth-types'
 
 //COMPONENTS
 import ClipLoader from 'vue-spinner/src/ClipLoader.vue'
 import ProgressBar from 'primevue/progressbar';
+import { addDoc, collection, getDoc } from '@firebase/firestore'
+import { doc } from 'firebase/firestore'
+import { ref, StorageError, uploadBytesResumable, UploadTaskSnapshot } from 'firebase/storage'
+import { logEvent } from 'firebase/analytics'
 
 export default defineComponent({
     name:"Form",
@@ -159,9 +162,9 @@ export default defineComponent({
     },
     async created(){
         //Load classes for dropdown
-		const doc = await db.collection('years').doc(this.getSchoolYearString()).get();
-		if(doc.exists){
-			const data = doc.data()?.classes as string[];
+		const a = await getDoc(doc(db, "years", this.getSchoolYearString()))//db.collection('years').doc(this.getSchoolYearString()).get();
+		if(a.exists()){
+			const data = a.data()?.classes as string[];
 			data.forEach(a=>{
 				this.classes.push({
 					"name":a,
@@ -270,21 +273,33 @@ export default defineComponent({
 				votes: 0,
 				topics: this.checkedTopics.map(topic => topicsList.indexOf(topic)) as number[],
 			} as project
-			const fun = await db.collection("projects").add(project)
+			const fun = await addDoc(collection(db, "projects"), project)
 
 
 			//upload files
 			const year = this.getSchoolYearString()
 			const selectedClass = this.selectedClass.name
-			const [pdfRef, imageRef] = [storage.ref(`projects/${year}/${selectedClass}/${fun.id}.pdf`), storage.ref(`images/${year}/${selectedClass}/${fun.id}.${extension}`)]
-			const pdfTask = pdfRef.put(fileInput.files[0])
-			const imageTask = imageRef.put(imageInput.files[0])
+			const [pdfRef, imageRef] = [ref(storage, `projects/${year}/${selectedClass}/${fun.id}.pdf`), ref(storage, `images/${year}/${selectedClass}/${fun.id}.${extension}`)]
+			const pdfTask = uploadBytesResumable(pdfRef, fileInput.files[0])
+			const imageTask = uploadBytesResumable (imageRef, imageInput.files[0])
 			
-			const stateChange = (snapshot: firebase.storage.UploadTaskSnapshot)=>{
+			const stateChange = (snapshot: UploadTaskSnapshot)=>{
 				return (snapshot.bytesTransferred / snapshot.totalBytes) * 100
 			}
-			const errorPut = (error: firebase.storage.FirebaseStorageError) => console.error(error.code)
-			const completePut = () => console.log("complete")
+			const errorPut = (error: StorageError) => console.error(error.code)
+			const completePut = () => {
+				const snapshots = [pdfTask.snapshot, imageTask.snapshot] //await Promise.all([pdfTask, imageTask])
+				logEvent(analytics, "Submit Event", {
+					pdfbytesTransferred: snapshots[0].bytesTransferred,
+					imageBytesTransferred: snapshots[1].bytesTransferred,
+					pdfState: snapshots[0].state,
+					imageState: snapshots[1].state,
+					projectTitle: project.projectTitle,
+					uploader: this.$store.getters.getUser.displayName,
+				})
+				this.disableButton = false
+				this.$router.push("/uploadCheck")
+			}
 			pdfTask.on('state_changed', (snapshot)=>{
 				this.fileProgress = stateChange(snapshot)
 				console.log(this.fileProgress)
@@ -293,19 +308,6 @@ export default defineComponent({
 				this.imageProgress = stateChange(snapshot)
 				console.log(this.imageProgress)
 			}, errorPut, completePut)
-
-			const snapshots = await Promise.all([pdfTask, imageTask])
-
-			analytics.logEvent("Submit Event", {
-				pdfbytesTransferred: snapshots[0].bytesTransferred,
-				imageBytesTransferred: snapshots[1].bytesTransferred,
-				pdfState: snapshots[0].state,
-				imageState: snapshots[1].state,
-				projectTitle: project.projectTitle,
-				uploader: this.$store.getters.getUser.displayName,
-			})
-			this.disableButton = false
-			this.$router.push("/uploadCheck")
 			
 			// #region OLD CODE
 			// const octokit = new Octokit({ auth: process.env.VUE_APP_ACCESS_CODE });

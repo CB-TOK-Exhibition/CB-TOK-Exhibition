@@ -1,8 +1,8 @@
-import firebase from "firebase/app";
-import "firebase/auth"
-import "firebase/firestore";
-import "firebase/storage"
-import "firebase/analytics"
+import { initializeApp } from "firebase/app";
+import { getAuth, browserLocalPersistence } from "firebase/auth"
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBGWutrCQ5Gjpv_v8L78Ku1Ia1EGYQQKRs",
@@ -14,12 +14,12 @@ const firebaseConfig = {
     measurementId: "G-LEEZ38C4SM"
 }
 
-const app = firebase.initializeApp(firebaseConfig)
-const db = app.firestore()
-const auth = app.auth()
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-const storage = app.storage()
-const analytics = app.analytics()
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+const auth = getAuth(app)
+auth.setPersistence(browserLocalPersistence)
+const storage = getStorage(app)
+const analytics = getAnalytics(app)
 
 export { db, auth, storage, analytics };
 export default app;

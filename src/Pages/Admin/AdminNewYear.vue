@@ -37,6 +37,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {db} from '@/firebase'
+import { doc, getDoc, setDoc } from "firebase/firestore"
 import getSchoolYear from "@/mixins/getSchoolYear"
 
 export default defineComponent({
@@ -75,8 +76,8 @@ export default defineComponent({
                 return
             }
             const path = this.yearStart.toString() + "-" + this.yearEnd.toString();
-            const piss = await db.collection("years").doc(path).get()
-            if(piss.exists){
+            const piss = await getDoc(doc(db, "years", path))
+            if(piss.exists()){
                 this.classErrorMessage = "This Class is Already Taken, Try Again"
                 return
             }
@@ -90,7 +91,7 @@ export default defineComponent({
                 return
             }
             console.log("submit")
-            db.collection("years").doc(this.yearStart.toString()+"-"+this.yearEnd.toString()).set({
+            setDoc(doc(db, "years", this.yearStart.toString()+"-"+this.yearEnd.toString()), {
                 classes: this.classes
             })
         }

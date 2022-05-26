@@ -21,8 +21,9 @@ import 'primeicons/primeicons.css'
 
 // SWIPER
 import SwiperCore, { Navigation } from 'swiper'
-require('swiper/swiper.scss')
-require('swiper/components/navigation/navigation.scss')
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
 SwiperCore.use([Navigation]);
 
 //LOADERS

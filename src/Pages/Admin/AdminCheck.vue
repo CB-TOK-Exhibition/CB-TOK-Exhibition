@@ -15,8 +15,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import {auth} from '@/firebase'
-import firebase from 'firebase'
 import checkAdminMixin from "@/mixins/checkAdmin"
+import { GoogleAuthProvider } from '@firebase/auth'
+import { signInWithPopup } from 'firebase/auth'
 
 export default defineComponent({
 	name: "Admin Check Page",
@@ -47,7 +48,8 @@ export default defineComponent({
 	mixins:[checkAdminMixin],
     methods: {
         signIn(){
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{
+            const provider = new GoogleAuthProvider()
+            signInWithPopup(auth, provider).catch(err=>{
                 //TODO ADD SOME UI THINGS 
                 const errorCode = err.code;
                 const errorMessage = err.message;

@@ -18,13 +18,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {auth} from '@/firebase'
-import firebase from 'firebase'
+import { auth } from '@/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+// import firebase from 'firebase/compat/app';
 
 export default defineComponent({
-	name:"Upload Instructions",
+	name:"Upload-Instructions",
 	created(){
-		auth.onAuthStateChanged((user)=>{
+		onAuthStateChanged(auth, (user)=>{
 			if (user) {
 				if(!user?.email?.endsWith("ocdsb.ca")){
 					this.$toast.add({severity:'error', summary: 'You Must login with a OCDSB email', detail:'Use your school email', life:5000})
@@ -38,7 +39,9 @@ export default defineComponent({
 	},
 	methods: {
 		signIn(){
-			auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{
+			const provider = new GoogleAuthProvider();
+			signInWithPopup(auth, provider)
+			.catch(err=>{
 				const errorCode = err.code;
 				const errorMessage = err.message;
 				console.warn(errorCode, errorMessage)

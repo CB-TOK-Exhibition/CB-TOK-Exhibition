@@ -51,6 +51,7 @@ import {db} from '@/firebase'
 import {yearContainer} from '@/types/projects'
 import {auth} from '@/firebase'
 import checkAdminMixin from '@/mixins/checkAdmin'
+import { collection, getDocs } from '@firebase/firestore'
 
 export default defineComponent({
 	name:"Admin",
@@ -74,7 +75,7 @@ export default defineComponent({
 		})
 	},
 	async created(){
-		const querySnapshot = await db.collection("years").get().catch(err=>{
+		const querySnapshot = await getDocs(collection(db, "years")).catch(err=>{
 			console.error("firebase error", err)
 		})
 		if(!querySnapshot) return

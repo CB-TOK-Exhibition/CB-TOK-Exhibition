@@ -53,7 +53,8 @@ import {db} from '@/firebase'
 import Pods from '@/components/Pods.vue'
 import Stars from "@/components/Stars.vue"
 import getThumbnail from '@/mixins/getThumbnail'
-//SWIPING
+import { doc, getDoc } from "firebase/firestore"
+
 import { Swiper, SwiperSlide } from 'swiper/vue'
 
 export default defineComponent({
@@ -76,8 +77,8 @@ export default defineComponent({
 	},
 	async created(){
 		//Get Featured Project List
-		const doc = await db.collection("meta").doc("featureProjects").get()
-		this.ids = (doc.data() as {projects: string[]}).projects
+		const featuredProjects = await getDoc(doc(db, "meta", "featureProjects"))
+		this.ids = (featuredProjects.data() as {projects: string[]}).projects
 		this.loaded = new Array(this.ids.length).fill(false);
 		this.projects = new Array(this.ids.length).fill({});
 		//Get project first run
@@ -88,7 +89,7 @@ export default defineComponent({
 		async getProject(i: number){	
 			// Get the project at 'this.id' and place in this.doc
 			if(this.loaded[i]) return
-			const projectSnapshot = await db.collection("projects").doc(this.ids[i]).get()
+			const projectSnapshot = await getDoc(doc(db, "projects", this.ids[i]))
 			const getProject = projectSnapshot.data() as project
 			this.projects[i] = getProject
 			this.projects[i].id = projectSnapshot.id

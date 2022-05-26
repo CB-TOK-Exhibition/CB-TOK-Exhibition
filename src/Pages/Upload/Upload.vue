@@ -15,8 +15,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import {auth, db} from '@/firebase'
-import firebase from "firebase"
+import {auth, db } from '@/firebase'
+import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
+import { User } from "firebase/auth"
 import Form from '@/components/Form.vue'
 
 export default defineComponent({
@@ -45,7 +46,7 @@ export default defineComponent({
 		}
 	},
 	methods: {
-		async penis(user: firebase.User){
+		async penis(user: User){
 			//check if user is banned
 			this.banned = await this.checkBanned(user)
 			if(this.banned){
@@ -60,16 +61,15 @@ export default defineComponent({
 			}
 			this.userDetermined = true
 		},
-		async checkBanned(user: firebase.User): Promise<boolean>{
-			const snap2 = await db.collection("meta").doc("banned").get()
-			const dat = snap2.data()
-			if(snap2.exists && dat && dat.emails.includes(user.email)){
-				return true
-			}
-			else return false
+		async checkBanned(user: User): Promise<boolean>{
+			const snap = await getDoc(doc(db, "meta", "banned"));
+			const data = snap.data()
+			return snap.exists() && data?.emails.includes(user.email)
 		},
-		async checkSubmitted(user: firebase.User): Promise<boolean>{
-			const snapshot = await db.collection("projects").where("author", "==", user.email).get()
+		async checkSubmitted(user: User): Promise<boolean>{
+			const projectRef = collection(db, "projects")
+			const q = query(projectRef, where("author", "==", user.email))
+			const snapshot = await getDocs(q);
 			return !snapshot.empty
 		}
 	},

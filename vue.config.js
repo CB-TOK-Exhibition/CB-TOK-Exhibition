@@ -4,6 +4,6 @@ module.exports = {
     // help here: https://cli.vuejs.org/core-plugins/pwa.html#configuration
     },
     configureWebpack: {
-        devtool: 'source-map'
+        devtool: 'source-map',
     }
 };

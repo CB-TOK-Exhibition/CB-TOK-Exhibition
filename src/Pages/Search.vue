@@ -64,6 +64,7 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 import {db} from '@/firebase'
+import {doc, getDoc} from "firebase/firestore"
 
 //ALGOLIA
 import algoliasearch from "algoliasearch"
@@ -96,7 +97,7 @@ export default defineComponent({
 	components:{Pods, Stars},
 	mixins:[getThumbnail],
 	data() {
-		const searchClient = algoliasearch("JERBZD5TNR", "7b3aa8569e2b61645013ab83a6341c2b")
+		const searchClient = algoliasearch("JERBZD5TNR", "bfe15d7b173b4595f1e7083020a41be1")
 		const index = searchClient.initIndex("projects")
 		return {
 			//FOR DISPLAY THINGS
@@ -139,7 +140,7 @@ export default defineComponent({
 			this.filterClass = {name:"No Filter",code:""} as okboomer
 			this.classes = [{name:"No Filter",code:""}]
 			if(a.value.code){
-				const data = (await db.collection("years").doc(a.value.code).get()).data() as {classes: string[]}
+				const data = (await getDoc(doc(db, "years", a.value.code))).data() as {classes: string[]}
 				data.classes.forEach(className=>{this.classes.push({name:className,code:className})})
 			}
 
@@ -189,28 +190,16 @@ export default defineComponent({
 			
 			let temp = []
 			let out = [] as project[]
-			for(const id of ids) temp.push(db.collection("projects").doc(id).get())
-			// console.log("For loop push")
-			// console.timeLog()
-			// console.log(temp)
+			for(const id of ids) temp.push(getDoc(doc(db, "projects", id)))
 			temp = await Promise.all(temp)
-			// console.log(temp)
-			// console.log("Promise.all the temp")
-			// console.timeLog()
-
-
+			
 			for(const doc of temp){
 				const project = doc.data() as project
 				project.id = doc.id
 				out.push(project)
 			}
-			// console.log("For loop doc")
-			// console.timeLog()
 			const cock = out.map(project=>this.getThumbnailProject(project))
 			out = await Promise.all(cock)
-			// console.log("Final")
-			// console.timeLog()
-			
 			return out
 		},
 	}

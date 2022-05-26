@@ -28,7 +28,9 @@
 <script lang="ts">
 import project from '@/types/projects'
 import { defineComponent } from 'vue'
-import {db, storage} from '@/firebase'
+import { db, storage } from '@/firebase'
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage"
 import getThumbnail from '@/mixins/getThumbnail'
 import Pods from "@/components/Pods.vue"
 import Stars from "@/components/Stars.vue"
@@ -49,18 +51,18 @@ export default defineComponent({
     async created(){
 		//GET THE YEAR AND CLASS OF THE PROJECT IN QUESTION
 		const projectID = this.$route.fullPath.substring(1)		
-		const doc = await db.collection('projects').doc(projectID).get().catch(err => {
+		const projects = await getDoc(doc(db, "projects", projectID)).catch(err => {
 			console.error(err);
 			this.$router.push('/')
 		})
 
-		if (!doc || !doc.exists){
+		if (!projects || !projects.exists()){
 			this.four04 = true
 			document.title = "404 | CB TOK Exhbition"
 			return
 		}
 
-		const data = doc.data();
+		const data = projects.data();
 		if(!data){console.error("data can't even???");this.$router.push('/');return}
 		this.project = data as project
 		this.project.id = projectID
@@ -69,10 +71,17 @@ export default defineComponent({
 		//ADD BACKGROUND
 		this.bgURL = await this.getThumbnailURL(this.project)
 		
-		const url = await storage.ref(`/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`).getDownloadURL().catch(err=>{
+		const url = await getDownloadURL(ref(storage, `/projects/${this.project.year}/${this.project.class}/${this.project.id}.pdf`))
+		.catch(err=>{
 			this.$toast.add({severity:'error', summary: 'PDF not accessable', detail:err.code, life: 5000})
 		})
-		this.pdfURL = url
+
+		if(url){
+			this.pdfURL = url
+		}
+		else{
+			this.$toast.add({severity:'error', summary: 'PDF not accessable', life: 5000})
+		}
     },
     methods: {
 
@@ -106,8 +115,8 @@ export default defineComponent({
 			if(div) div.appendChild(obj);
 		},
 		async vote(a: number){
-			// eslint-disable-next-line
-			const shit = (await db.collection("projects").doc(this.project.id).get()).data()!
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			const shit = (await getDoc(doc(db, "projects", this.project.id!))).data()!
 			
 			let votes, rating;
 			if(!shit.votes) votes = 0 
@@ -116,10 +125,11 @@ export default defineComponent({
 			else rating = shit.rating
 
 			const newRating = ((rating * votes) + a)/(votes + 1)
-
-			await db.collection("projects").doc(this.project.id).update({
-				rating: newRating,
-				votes: votes + 1
+			
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			await updateDoc(doc(db, "projects", this.project.id!), {
+				votes: votes + 1,
+				rating: newRating
 			})
 
 			this.$toast.add({severity:'success', summary: 'Voted', detail:'Vote submitted', life: 3000});
